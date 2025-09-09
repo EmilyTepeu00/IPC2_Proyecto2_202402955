@@ -1,4 +1,4 @@
-from. lista_enlazada import ListaEnlazada
+from .lista_enlazada import ListaEnlazada
 
 #COLA FIFO
 class Cola:
