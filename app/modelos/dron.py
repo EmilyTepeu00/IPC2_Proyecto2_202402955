@@ -49,3 +49,12 @@ class Dron:
 
     def __str__(self):
         return f"{self.nombre} (Hilera {self.hilera_asignada}, Posición {self.posicion_actual})"
+    
+    #DEVOLVER LAS ESTADISTICAS DEL DRON
+    def obtener_estadisticas(self):
+        stats = ListaEnlazada()
+        stats.agregar_final(self.nombre)
+        stats.agregar_final(self.agua_utilizada)
+        stats.agregar_final(self.fertilizante_utilizado)
+        stats.agregar_final(self.hilera_asignada)
+        return stats
