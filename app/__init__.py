@@ -7,5 +7,5 @@ def crear_app():
     #Blueprint
     from .controladores.main_controller import main_bp
     app.register_blueprint(main_bp)
-
+    
     return app
