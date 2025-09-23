@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Riego Automatizado</title>
+    <style>
+        /* ESTILOS DE LA INTERFAZ */
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .container { max-width: 1200px; margin: 0 auto; } /* Centrar contenido */
+        .menu { background: #f0f0f0; padding: 10px; margin-bottom: 20px; }
+        .menu a { margin-right: 15px; text-decoration: none; color: #333; }
+        .menu a:hover { color: #007bff; } /* Efecto al pasar mouse */
+        .card { border: 1px solid #ddd; padding: 15px; margin: 10px 0; }
+        .btn { background: #007bff; color: white; padding: 10px 15px; border: none; cursor: pointer; }
+        .btn:hover { background: #0056b3; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Sistema de Riego Automatizado</h1>
+        
+        <!--MENU DE NAVEGACION-->
+        <div class="menu">
+            <a href="/">Inicio</a>
+            <a href="/cargar-xml">Cargar XML</a>
+            <a href="/invernaderos">Ver Invernaderos</a>
+            <a href="/probar-plan">Probar Plan</a>
+        </div>
+
+        <!--CONTENIDO PRINCIPAL-->
+        <div class="content">
+            {% block content %}{% endblock %}
+        </div>
+    </div>
+</body>
+</html>
