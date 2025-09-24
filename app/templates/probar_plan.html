@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="card">
+    <h2>Probar Pal de Riego</h2>
+
+    {% if resultado %}
+    <div class="resultado">
+        <h3>Resultao del Plan</h3>
+        <p><strong>Plan:</strong> {{ resultado.plan }}</p>
+        <p><strong>Tiempo total:</strong> {{ resultado.tiempo_total }} segundos</p>
+
+        <h4>Intrucciones por Tiempo</h4>
+        <div class="instrucciones">
+            {% for tiempo in resultado.instrucciones %}
+            <div class="tiempo-card">
+                <h5>Tiempo {{ tiempo.segundos }}s:</h5>
+                <ul>
+                    {% for instruccion in tiempo.acciones %}
+                    <li><strong>{{ instruccion.dron }}:</strong> {{ instruccion.accion }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% else %}
+    <div class="error">
+        <p>No se pudo procesar el plan. Asegurese de cargar un archivo XML primero</p>
+        <a href="/cargar-xml" class="btn">Cargar XML</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+<style>
+.instrucciones {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.tiempo-card {
+    border: 1px solid #ddd;
+    padding: 15px;
+    border-radius: 5px;
+    background: #f9f9f9;
+}
+
+.tiempo-card h5 {
+    margin: 0 0 10px 0;
+    color: #333;
+}
+
+.error {
+    background: #ffe6e6;
+    padding: 15px;
+    border-radius: 5px;
+}
+</style>
