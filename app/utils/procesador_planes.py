@@ -89,8 +89,10 @@ class ProcesadorPlanes:
         for hilera in invernadero.hileras:
             if hilera.dron_asignado:
                 dron = hilera.dron_asignado
-                while dron.posicion_actual > 0:
+                while dron.posicion_actual > 1:
                     self._agregar_instruccion_tiempo(dron, dron.mover_atras())
+                if dron.posicion_actual == 1:
+                    self._agregar_instruccion_tiempo(dron, "En posición inicial")
 
     #AGREGAR INSTRUCCION EN EL TIEMPO ACTUAL
     def _agregar_instruccion_tiempo(self, dron, instruccion):

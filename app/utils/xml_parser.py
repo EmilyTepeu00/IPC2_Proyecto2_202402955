@@ -19,11 +19,15 @@ class XMLParser:
 
             self._parsear_drones(raiz)
             self._parsear_invernaderos(raiz)
+            
+            if self.invernaderos.tamaño > 0:
+                invernadero = self.invernaderos.obtener(0)
+                if invernadero.planes_riego.tamaño > 0:
+                    plan = invernadero.planes_riego.obtener(0)
 
             return True
         
         except Exception as e:
-            print(f"Error al cargar XML: {e}")
             return False
         
     #PARSEAR LISTA DE DRONES DEL XML
@@ -66,21 +70,31 @@ class XMLParser:
     def _agregar_plantas(self, invernadero, invernadero_xml):
         lista_plantas = invernadero_xml.find('listaPlantas')
         if lista_plantas is not None:
+            plantas_count = 0
             for planta_xml in lista_plantas.findall('planta'):
-                hilera_num = int(planta_xml.get('hilera'))
-                posicion = int(planta_xml.get('posicion'))
-                litros_agua = float(planta_xml.get('litrosAgua'))
-                gramos_fertilizante = float(planta_xml.get('gramosFertilizante'))
-                nombre_planta = planta_xml.text.strip() if planta_xml.text else ""
-                
-                nueva_planta = Planta(hilera_num, posicion, litros_agua, gramos_fertilizante, nombre_planta)
+                try:
+                    hilera_num = int(planta_xml.get('hilera'))
+                    posicion = int(planta_xml.get('posicion'))
+                    litros_agua = float(planta_xml.get('litrosAgua'))
+                    gramos_fertilizante = float(planta_xml.get('gramosFertilizante'))
+                    nombre_planta = planta_xml.text.strip() if planta_xml.text else ""
+                    
+                    nueva_planta = Planta(hilera_num, posicion, litros_agua, gramos_fertilizante, nombre_planta)
 
-                #Buscar la hilera correspondiente
-                for hilera in invernadero.hileras:
-                    if hilera.numero == hilera_num:
-                        hilera.agregar_planta(nueva_planta)
-                        break
-
+                    #Buscar la hilera correspondiente y agregar planta
+                    hilera_encontrada = None
+                    for hilera in invernadero.hileras:
+                        if hilera.numero == hilera_num:
+                            hilera_encontrada = hilera
+                            break
+                    
+                    if hilera_encontrada:
+                        hilera_encontrada.agregar_planta(nueva_planta)
+                        plantas_count += 1
+                        
+                except Exception as e:
+                    continue
+            
     #ASIGNAR DRONES A HILERAS
     def _asignar_drones(self, invernadero, invernadero_xml):
         asignaciones = invernadero_xml.find('asignacionDrones')
@@ -89,20 +103,22 @@ class XMLParser:
                 id_dron = int(asignacion.get('id'))
                 num_hilera = int(asignacion.get('hilera'))
 
-                #Buscar dron por ID
                 dron_encontrado = None
                 for dron in self.drones:
                     if dron.id == id_dron:
                         dron_encontrado = dron
                         break
 
-                #Buscar hilera y asignar dron
                 if dron_encontrado:
+                    hilera_encontrada = None
                     for hilera in invernadero.hileras:
                         if hilera.numero == num_hilera:
-                            hilera.dron_asignado = dron_encontrado
-                            dron_encontrado.hilera_asignada = num_hilera
+                            hilera_encontrada = hilera
                             break
+                    
+                    if hilera_encontrada:
+                        hilera_encontrada.dron_asignado = dron_encontrado
+                        dron_encontrado.hilera_asignada = num_hilera
     
     #AGREGAR PLANES DE RIEGO
     def _agregar_planes_riego(self, invernadero, invernadero_xml):
@@ -112,7 +128,6 @@ class XMLParser:
                 nombre_plan = plan_xml.get('nombre')
                 contenido_plan = plan_xml.text.strip() if plan_xml.text else ""
 
-                #Almacenar planes
                 plan_data = ListaEnlazada()
                 plan_data.agregar_final(nombre_plan)
                 plan_data.agregar_final(contenido_plan)

@@ -6,15 +6,15 @@
     
     {% if invernaderos.tamaño > 0 %}
         {% for invernadero in invernaderos %}
-        <div class="card" style="background: #f9f9f9;">
-            <h3>{{ invernadero.nombre }}</h3>
-            <p><strong>Hileras:</strong> {{ invernadero.hileras }}</p>
-            <p><strong>Plantas por hilera:</strong> {{ invernadero.plantas_x_hilera }}</p>
-            <a href="/probar-plan/{{ loop.index0 }}">Probar Planes</a>
+        <div class="card">
+            <h3>Nombre: {{ invernadero.obtener(0) }}</h3>
+            <p><strong>Hileras:</strong> {{ invernadero.obtener(1) }}</p>
+            <p><strong>Plantas por hilera:</strong> {{ invernadero.obtener(2) }}</p>
+            <a href="/probar-plan">Probar Plan</a>
         </div>
         {% endfor %}
     {% else %}
-        <p>No hay invernaderos cargados. <a href="/cargar-xml">Cargar XML</a></p>
+        <p>No hay invernaderos cargados.</p>
     {% endif %}
 </div>
 {% endblock %}
