@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, render_template
 from ..utils.xml_parser import XMLParser
 from ..utils.procesador_planes import ProcesadorPlanes
 from ..modelos.lista_enlazada import ListaEnlazada
@@ -12,19 +12,25 @@ procesador = ProcesadorPlanes()
 
 @main_bp.route('/')
 def pagina_inicio():
-    return "Sistema de Riego Automatizado"
+    #RENDERIZA template HTML en lugar de texto plano
+    return render_template('index.html')
 
 
 @main_bp.route('/cargar-xml', methods=['POST'])
 #RUTA PARA CARGAR ARCHIVOS XML
 def cargar_xml():
+    #GET: Mostrar formulario HTML
+    if request.method == 'GET':
+        return render_template('cargar_xml.html')
+    
+    #POST: Procesar archivo subido
     try:
         if 'archivo' not in request.files:
             return "No se envió archivo", 400
         
         archivo = request.files['archivo']
         if archivo.filename == '':
-            return "Nombre de archivo invalido", 400
+            return "Nombre de archivo inválido", 400
         
         if archivo and archivo.filename.endswith('.xml'):
             #Guardar archivo temporalmente
@@ -33,7 +39,6 @@ def cargar_xml():
             #Procesar XML
             if parser.cargar_archivo('temp.xml'):
                 return "XML cargado con exito", 200
-            
             else:
                 return "Error al procesar XML", 500
             
@@ -48,16 +53,18 @@ def cargar_xml():
 def listar_invernaderos():
     try:
         invernaderos = parser.obtener_invernaderos()
-        resultado = ListaEnlazada()
 
+        #Preparar datos para pasar al template XML
+        datos_invernaderos = ListaEnlazada()
         for invernadero in invernaderos:
-            info = ListaEnlazada()
-            info.agregar_final(f"Nombre: {invernadero.nombre}")
-            info.agregar_final(f"Hileras: {invernadero.numero_hileras}")
-            info.agregar_final(f"Plantas por hilera: {invernadero.plantas_x_hilera}")
-            resultado.agregar_final(info)
+            datos_invernaderos.agregar_final({
+                'nombre': invernadero.nombre,
+                'hileras': invernadero.numero_hileras,
+                'plantas_x_hilera': invernadero.plantas_x_hilera
+            })
 
-        return str(resultado), 200
+        #Pasar datos al template HTML
+        return render_template('invernaderos.html', invernaderos=datos_invernaderos)
     
     except Exception as e:
         return f"Error: {str(e)}", 500
