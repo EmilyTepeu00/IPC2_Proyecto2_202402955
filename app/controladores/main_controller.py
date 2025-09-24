@@ -16,7 +16,7 @@ def pagina_inicio():
     return render_template('index.html')
 
 
-@main_bp.route('/cargar-xml', methods=['POST'])
+@main_bp.route('/cargar-xml', methods=['GET', 'POST'])
 #RUTA PARA CARGAR ARCHIVOS XML
 def cargar_xml():
     #GET: Mostrar formulario HTML
@@ -57,11 +57,11 @@ def listar_invernaderos():
         #Preparar datos para pasar al template XML
         datos_invernaderos = ListaEnlazada()
         for invernadero in invernaderos:
-            datos_invernaderos.agregar_final({
-                'nombre': invernadero.nombre,
-                'hileras': invernadero.numero_hileras,
-                'plantas_x_hilera': invernadero.plantas_x_hilera
-            })
+            datos_invernadero = ListaEnlazada()
+            datos_invernadero.agregar_final(invernadero.nombre)
+            datos_invernadero.agregar_final(invernadero.numero_hileras)
+            datos_invernadero.agregar_final(invernadero.plantas_x_hilera)
+            datos_invernaderos.agregar_final(datos_invernadero)
 
         #Pasar datos al template HTML
         return render_template('invernaderos.html', invernaderos=datos_invernaderos)
@@ -111,3 +111,9 @@ def probar_plan():
     
     except Exception as e:
         return f"Error: {str(e)}", 500
+    
+
+@main_bp.route('/generar-reporte/<int:invernadero_id>')
+#GENERAR REPORTE HTML PARA UN INVERNADERO
+def generar_reporte(invernadero_id):
+    return "Reporte generadoooooooooooooo"
