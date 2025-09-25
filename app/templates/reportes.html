@@ -2,26 +2,20 @@
 
 {% block content %}
 <div class="card">
-    <h2>Generar Reportes</h2>
+    <h2>📊 Generar Reportes</h2>
 
     {% if invernaderos.tamaño > 0 %}
     <div class="reportes-options">
         <div class="option-card">
-            <h3>Reporte HTML completo</h3>
+            <h3>📄 Reporte HTML completo</h3>
             <p>Genera un reporte detallado en un formato HTML con todas las estadisticas e instrucciones</p>
             <a href="/generar-reporte-html/0" class="btn">Generar Reporte HTML</a>
         </div>
 
         <div class="option-card">
-            <h3>Grafico Graphviz</h3>
+            <h3>📈 Grafico Graphviz</h3>
             <p>Genera un diagrama visual del estado de los TDAs y drones</p>
             <a href="/generar-grafo/0" class="btn">Generar Grafico</a>
-        </div>
-
-        <div class="option-card">
-            <h3>Reporte Combinado</h3>
-            <p>Genera ambos reportes para analisis completo</p>
-            <a href="/generar-reporte-completo/0" class="btn">Reporte Completo</a>
         </div>
     </div>
     {% else %}

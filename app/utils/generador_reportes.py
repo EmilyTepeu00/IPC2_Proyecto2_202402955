@@ -90,11 +90,6 @@ class GeneradorReportes:
         
         html.agregar_final("</div>")
         
-        #Pie de pagina
-        html.agregar_final("<div class='section'>")
-        html.agregar_final("<p><em>Reporte generado automaticamente por el Sistema de Riego Automatizado</em></p>")
-        html.agregar_final("</div>")
-        
         html.agregar_final("</body>")
         html.agregar_final("</html>")
         
