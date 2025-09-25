@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify, render_template
+from flask import Blueprint, request, render_template
 from ..utils.xml_parser import XMLParser
 from ..utils.procesador_planes import ProcesadorPlanes
 from ..modelos.lista_enlazada import ListaEnlazada
@@ -11,8 +11,8 @@ parser = XMLParser()
 procesador = ProcesadorPlanes()
 
 @main_bp.route('/')
+#PAGINA PRINCIPAL DEL SISTEMA
 def pagina_inicio():
-    #RENDERIZA template HTML en lugar de texto plano
     return render_template('index.html')
 
 
@@ -26,26 +26,29 @@ def cargar_xml():
     #POST: Procesar archivo subido
     try:
         if 'archivo' not in request.files:
-            return "No se envió archivo", 400
+            return render_template('error.html', mensaje="No se envió archivo")
         
         archivo = request.files['archivo']
         if archivo.filename == '':
-            return "Nombre de archivo inválido", 400
+            return render_template('error.html', mensaje="Nombre de archivo invalido")
         
         if archivo and archivo.filename.endswith('.xml'):
             #Guardar archivo temporalmente
-            archivo.save('temp.xml')
-
-            #Procesar XML
-            if parser.cargar_archivo('temp.xml'):
-                return "XML cargado con exito", 200
-            else:
-                return "Error al procesar XML", 500
+            archivo_path = 'data/entrada/temp.xml'
+            archivo.save(archivo_path)
             
-        return "Formato de archivo invalido", 400
-    
+            #Procesar XML
+            if parser.cargar_archivo(archivo_path):
+                return render_template('exito.html', 
+                                    mensaje="XML cargado con ecito", 
+                                    detalles=f"Se cargaron {parser.obtener_invernaderos().tamaño} invernaderos")
+            else:
+                return render_template('error.html', mensaje="Error al procesar el archivo XML")
+        else:
+            return render_template('error.html', mensaje="Formato de archivo invalido. Solo se aceptan .xml")
+            
     except Exception as e:
-        return f"Error: {str(e)}", 500
+        return render_template('error.html', mensaje=f"Error: {str(e)}")
     
 
 @main_bp.route('/invernaderos')
@@ -53,67 +56,90 @@ def cargar_xml():
 def listar_invernaderos():
     try:
         invernaderos = parser.obtener_invernaderos()
-
-        #Preparar datos para pasar al template XML
+        
+        #Preparar datos para template
         datos_invernaderos = ListaEnlazada()
         for invernadero in invernaderos:
-            datos_invernadero = ListaEnlazada()
-            datos_invernadero.agregar_final(invernadero.nombre)
-            datos_invernadero.agregar_final(invernadero.numero_hileras)
-            datos_invernadero.agregar_final(invernadero.plantas_x_hilera)
-            datos_invernaderos.agregar_final(datos_invernadero)
-
-        #Pasar datos al template HTML
+            invernadero_data = ListaEnlazada()
+            invernadero_data.agregar_final(invernadero.nombre)
+            invernadero_data.agregar_final(invernadero.numero_hileras)
+            invernadero_data.agregar_final(invernadero.plantas_x_hilera)
+            datos_invernaderos.agregar_final(invernadero_data)
+        
         return render_template('invernaderos.html', invernaderos=datos_invernaderos)
     
     except Exception as e:
-        return f"Error: {str(e)}", 500
+        return render_template('error.html', mensaje=f"Error al cargar invernaderos: {str(e)}")
     
 
 @main_bp.route('/probar-plan')
-#PROBAR PROCESAMIENTO DE PLAN DE RIEGO
-def probar_plan():
+@main_bp.route('/probar-plan/<int:invernadero_id>')
+#PROBAR PLAN DE RIEGO PARA UN INVERNADERO ESPECIFICO
+def probar_plan(invernadero_id=0):
     try:
         invernaderos = parser.obtener_invernaderos()
-        if invernaderos.tamaño == 0:
-            return "No hay invernaderos cargados", 400
         
-        invernadero = invernaderos.obtener(0)
+        if invernaderos.tamaño == 0:
+            return render_template('error.html', mensaje="No hay invernaderos cargados")
+        
+        #Validar ID del invernadero
+        if invernadero_id >= invernaderos.tamaño:
+            return render_template('error.html', mensaje="ID de invernadero invalido")
+        
+        invernadero = invernaderos.obtener(invernadero_id)
+        
         if invernadero.planes_riego.tamaño == 0:
-            return "No hay planes de riego", 400
+            return render_template('error.html', mensaje="No hay planes de riego para este invernadero")
         
         #Procesar primer plan
         plan = invernadero.planes_riego.obtener(0)
         nombre_plan = plan.obtener(0)
         contenido_plan = plan.obtener(1)
-
+        
+        #Generar instrucciones
         instrucciones = procesador.procesar_plan(contenido_plan, invernadero)
         tiempo_total = procesador.obtener_tiempo_total()
-
-        resultado = ListaEnlazada()
-        resultado.agregar_final(f"Plan: {nombre_plan}")
-        resultado.agregar_final(f"Tiempo total: {tiempo_total} segundos")
-        resultado.agregar_final("Instrucciones por tiempo:")
-
+        
+        #Preparar datos para template
+        resultado = {
+            'plan': nombre_plan,
+            'tiempo_total': tiempo_total,
+            'instrucciones': []
+        }
+        
+        #Convertir instrucciones a formato para template
         for tiempo_data in instrucciones:
             segundos = tiempo_data.obtener(0)
             instrucciones_tiempo = tiempo_data.obtener(1)
             
-            tiempo_str = f"  Tiempo {segundos}s:"
-            resultado.agregar_final(tiempo_str)
-
+            tiempo_info = {
+                'segundos': segundos,
+                'acciones': []
+            }
+            
             for instruccion in instrucciones_tiempo:
                 dron = instruccion.obtener(0)
                 accion = instruccion.obtener(1)
-                resultado.agregar_final(f"    {dron}: {accion}")
-
-        return str(resultado), 200
+                tiempo_info['acciones'].append({
+                    'dron': dron,
+                    'accion': accion
+                })
+            
+            resultado['instrucciones'].append(tiempo_info)
+        
+        return render_template('probar_plan.html', resultado=resultado)
     
     except Exception as e:
-        return f"Error: {str(e)}", 500
+        return render_template('error.html', mensaje=f"Error al procesar plan: {str(e)}")
     
 
-@main_bp.route('/generar-reporte/<int:invernadero_id>')
-#GENERAR REPORTE HTML PARA UN INVERNADERO
-def generar_reporte(invernadero_id):
-    return "Reporte generadoooooooooooooo"
+@main_bp.route('/estadisticas')
+#MOSTRAR ESTADISTICAS DE AGUA Y FERTILIZANTE
+def mostrar_estadisticas():
+    try:
+        #Estadisticaaaaaaaaas
+        return render_template('en_desarrollo.html', 
+                            funcionalidad="Estadisticas de consumo")
+    
+    except Exception as e:
+        return render_template('error.html', mensaje=f"Error: {str(e)}")

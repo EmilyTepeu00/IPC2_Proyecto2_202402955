@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="card success-card">
+    <h2>✅ Exito</h2>
+    <p>{{ mensaje }}</p>
+    {% if detalles %}
+    <p><small>{{ detalles }}</small></p>
+    {% endif %}
+    <div class="acciones">
+        <a href="/invernaderos" class="btn">Ver Invernaderos</a>
+        <a href="/" class="btn btn-secondary">Volver al Inicio</a>
+    </div>
+</div>
+{% endblock %}
+
+<style>
+.success-card {
+    background: #e6ffe6;
+    border-color: #99ff99;
+}
+
+.acciones {
+    margin-top: 20px;
+}
+
+.btn-secondary {
+    background: #6c757d;
+}
+</style>
