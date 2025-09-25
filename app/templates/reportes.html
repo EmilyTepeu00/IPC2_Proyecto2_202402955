@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="card">
+    <h2>Generar Reportes</h2>
+
+    {% if invernaderos.tamaño > 0 %}
+    <div class="reportes-options">
+        <div class="option-card">
+            <h3>Reporte HTML completo</h3>
+            <p>Genera un reporte detallado en un formato HTML con todas las estadisticas e instrucciones</p>
+            <a href="/generar-reporte-html/0" class="btn">Generar Reporte HTML</a>
+        </div>
+
+        <div class="option-card">
+            <h3>Grafico Graphviz</h3>
+            <p>Genera un diagrama visual del estado de los TDAs y drones</p>
+            <a href="/generar-grafo/0" class="btn">Generar Grafico</a>
+        </div>
+
+        <div class="option-card">
+            <h3>Reporte Combinado</h3>
+            <p>Genera ambos reportes para analisis completo</p>
+            <a href="/generar-reporte-completo/0" class="btn">Reporte Completo</a>
+        </div>
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <p>No hay invernaderos cargados para generar reportes</p>
+        <a href="/cargar-xml" class="btn">Cargar XML</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+<style>
+.reportes-options {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.option-card {
+    border: 1px solid #ddd;
+    padding: 20px;
+    border-radius: 8px;
+    text-align: center;
+}
+
+.option-card h3 {
+    margin-top: 0;
+    color: #2c3e50;
+}
+
+.option-card p {
+    color: #666;
+    margin-bottom: 20px;
+}
+</style>

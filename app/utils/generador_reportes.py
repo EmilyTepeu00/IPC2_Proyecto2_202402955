@@ -1,39 +1,150 @@
 from ..modelos.lista_enlazada import ListaEnlazada
+import os
+import graphviz
 
+#GENERADOR DE REPORTES HTML Y GRAFICOS
 class GeneradorReportes:
-    #REPORTE HTML DE UN INVERNADERO
-    def generar_reporte_invernadero(self, invernadero, plan_riego, instrucciones):
+    
+    def __init__(self):
+        self.ruta_reportes = "data/salida/reportes"
+        self.crear_directorios()
+    
+    def crear_directorios(self):
+        if not os.path.exists(self.ruta_reportes):
+            os.makedirs(self.ruta_reportes)
+    
+    #REPORTE HTML COMPLETO DE UN INVERNADERO
+    def generar_reporte_invernadero_html(self, invernadero, plan_riego, instrucciones):
         html = ListaEnlazada()
-
-        html.agregar_final("<html><head><title>Reporte de Riego</title></head><body>")
-        html.agregar_final(f"<h1>Reporte: {invernadero.nombre}</h1>")
-        html.agregar_final(f"<h2>Plan: {plan_riego}</h2>")
-
-        #ESTADISTICAS
-        html.agregar_final("<h3>Estadisticas</h3>")
-        html.agregar_final("<ul>")
-
+        
+        #Encabezado
+        html.agregar_final("<!DOCTYPE html>")
+        html.agregar_final("<html lang='es'>")
+        html.agregar_final("<head>")
+        html.agregar_final("<meta charset='UTF-8'>")
+        html.agregar_final("<title>Reporte de Riego - {}</title>".format(invernadero.nombre))
+        html.agregar_final("<style>")
+        html.agregar_final("body { font-family: Arial, sans-serif; margin: 20px; }")
+        html.agregar_final(".header { background: #2c3e50; color: white; padding: 20px; }")
+        html.agregar_final(".section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; }")
+        html.agregar_final(".tiempo { background: #f8f9fa; margin: 10px 0; padding: 10px; }")
+        html.agregar_final("table { width: 100%; border-collapse: collapse; }")
+        html.agregar_final("th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }")
+        html.agregar_final("th { background: #f2f2f2; }")
+        html.agregar_final("</style>")
+        html.agregar_final("</head>")
+        html.agregar_final("<body>")
+        
+        #Header del reporte
+        html.agregar_final("<div class='header'>")
+        html.agregar_final("<h1>Reporte de Sistema de Riego</h1>")
+        html.agregar_final("<h2>{}</h2>".format(invernadero.nombre))
+        html.agregar_final("</div>")
+        
+        #Informacion general
+        html.agregar_final("<div class='section'>")
+        html.agregar_final("<h3>Informacion General</h3>")
+        html.agregar_final("<p><strong>Plan de riego:</strong> {}</p>".format(plan_riego.obtener(0)))
+        html.agregar_final("<p><strong>Hileras:</strong> {}</p>".format(invernadero.numero_hileras))
+        html.agregar_final("<p><strong>Plantas por hilera:</strong> {}</p>".format(invernadero.plantas_x_hilera))
+        html.agregar_final("</div>")
+        
+        #Estadisticas de drones
+        html.agregar_final("<div class='section'>")
+        html.agregar_final("<h3>Estadisticas de Drones</h3>")
+        html.agregar_final("<table>")
+        html.agregar_final("<tr><th>Dron</th><th>Hilera</th><th>Agua (L)</th><th>Fertilizante (g)</th></tr>")
+        
         for hilera in invernadero.hileras:
             if hilera.dron_asignado:
                 dron = hilera.dron_asignado
-                html.agregar_final(f"<li>{dron.nombre}: {dron.agua_utilizada}L agua, {dron.fertilizante_utilizado}g fertilizante</li>")
-
-        html.agregar_final("</ul>")
-
-        #INSTRUCCIONES POR TIEMPO
-        html.agregar_final("<h3>Instrucciones por Tiempo</h3>")
+                html.agregar_final("<tr>")
+                html.agregar_final("<td>{}</td>".format(dron.nombre))
+                html.agregar_final("<td>Hilera {}</td>".format(hilera.numero))
+                html.agregar_final("<td>{}</td>".format(dron.agua_utilizada))
+                html.agregar_final("<td>{}</td>".format(dron.fertilizante_utilizado))
+                html.agregar_final("</tr>")
+        
+        html.agregar_final("</table>")
+        html.agregar_final("</div>")
+        
+        #Instrucciones por tiempo
+        html.agregar_final("<div class='section'>")
+        html.agregar_final("<h3>Linea de Tiempo de Instrucciones</h3>")
+        
         for tiempo_data in instrucciones:
             segundos = tiempo_data.obtener(0)
-            html.agregar_final(f"<h4>Tiempo {segundos}s:</h4><ul>")
-            
             instrucciones_tiempo = tiempo_data.obtener(1)
+            
+            html.agregar_final("<div class='tiempo'>")
+            html.agregar_final("<h4>Tiempo {} segundos:</h4>".format(segundos))
+            html.agregar_final("<ul>")
+            
             for instruccion in instrucciones_tiempo:
                 dron = instruccion.obtener(0)
                 accion = instruccion.obtener(1)
-                html.agregar_final(f"<li>{dron}: {accion}</li>")
+                html.agregar_final("<li><strong>{}:</strong> {}</li>".format(dron, accion))
             
             html.agregar_final("</ul>")
+            html.agregar_final("</div>")
         
-        html.agregar_final("</body></html>")
+        html.agregar_final("</div>")
+        
+        #Pie de pagina
+        html.agregar_final("<div class='section'>")
+        html.agregar_final("<p><em>Reporte generado automaticamente por el Sistema de Riego Automatizado</em></p>")
+        html.agregar_final("</div>")
+        
+        html.agregar_final("</body>")
+        html.agregar_final("</html>")
+        
         return html
+    
+    #GRAFICO GRAPHVIZ DEL ESTADO DE LOS TDAs
+    def generar_grafo_tdas(self, invernadero, instrucciones):
+        try:
+            dot = graphviz.Digraph(comment='Estado TDAs Sistema Riego')
             
+            #Configuracion del grafico
+            dot.attr(rankdir='TB', size='8,5')
+            
+            #Nodo principal
+            dot.node('Sistema', 'Sistema de Riego\n{}'.format(invernadero.nombre), 
+                    shape='box', style='filled', color='lightblue')
+            
+            #Nodos para cada dron
+            for i, hilera in enumerate(invernadero.hileras):
+                if hilera.dron_asignado:
+                    dron = hilera.dron_asignado
+                    dot.node(f'Dron{i}', f'{dron.nombre}\Posicion: H{dron.hilera_asignada}P{dron.posicion_actual}\nAgua: {dron.agua_utilizada}L', 
+                            shape='ellipse', style='filled', color='lightgreen')
+                    dot.edge('Sistema', f'Dron{i}')
+            
+            #Nodo para instrucciones
+            dot.node('Instrucciones', 'Instrucciones Generadas\nTiempo total: {}s'.format(instrucciones.tamaño), 
+                    shape='box', style='filled', color='lightyellow')
+            dot.edge('Sistema', 'Instrucciones')
+            
+            #Guardar grafico
+            ruta_grafo = os.path.join(self.ruta_reportes, 'grafo_tdas')
+            dot.render(ruta_grafo, format='png', cleanup=True)
+            
+            return ruta_grafo + '.png'
+            
+        except Exception as e:
+            print(f"Error generando grafico Graphviz: {e}")
+            return None
+    
+    #GUARDAR EL REPORTE EN UN RCHIVO
+    def guardar_reporte_html(self, contenido_html, nombre_archivo):
+        try:
+            ruta_archivo = os.path.join(self.ruta_reportes, nombre_archivo)
+            
+            with open(ruta_archivo, 'w', encoding='utf-8') as f:
+                for linea in contenido_html:
+                    f.write(linea + '\n')
+            
+            return ruta_archivo
+        except Exception as e:
+            print(f"Error guardando reporte HTML: {e}")
+            return None
