@@ -1,16 +1,132 @@
-{% extends "base.html" %}  <!-- HEREDA de base.html -->
+{% extends "base.html" %}
 
-{% block content %}  <!-- RELLENA el bloque 'content' -->
+{% block content %}
 <div class="card">
-    <h2>Bienvenido al Sistema de Riego</h2>
-    <p>Sistema para optimizar el riego en invernaderos usando drones automatizados</p>
+    <h2>Dashboard del Sistema de Riego</h2>
     
-    <h3>Funcionalidades disponibles:</h3>
-    <ul>
-        <li>Cargar archivos XML</li>
-        <li>Visualizar invernaderos y drones</li>
-        <li>Probar planes de riego</li>
-        <li>Generar reportes</li>
-    </ul>
+    <div class="dashboard-stats">
+        <div class="stat-card">
+            <h3>Resumen del Sistema</h3>
+            <div class="stat-grid">
+                <div class="stat-item">
+                    <span class="stat-number">{{ invernaderos_count }}</span>
+                    <span class="stat-label">Invernaderos Cargados</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">{{ drones_count }}</span>
+                    <span class="stat-label">Drones Configurados</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">{{ planes_count }}</span>
+                    <span class="stat-label">Planes de Riego</span>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock %}
+
+<style>
+.dashboard-stats {
+    margin-bottom: 30px;
+}
+
+.stat-card {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+}
+
+.stat-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+}
+
+.stat-item {
+    text-align: center;
+    padding: 15px;
+    background: white;
+    border-radius: 5px;
+}
+
+.stat-number {
+    display: block;
+    font-size: 2em;
+    font-weight: bold;
+    color: #2c3e50;
+}
+
+.stat-label {
+    font-size: 0.9em;
+    color: #666;
+}
+
+.quick-actions {
+    margin: 30px 0;
+}
+
+.action-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+}
+
+.action-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    text-decoration: none;
+    color: #333;
+    transition: transform 0.2s;
+}
+
+.action-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.action-icon {
+    font-size: 2em;
+    margin-bottom: 10px;
+}
+
+.action-text {
+    font-weight: bold;
+}
+
+.recent-activity {
+    margin-top: 30px;
+}
+
+.activity-list {
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 15px;
+}
+
+.activity-item {
+    display: flex;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.activity-item:last-child {
+    border-bottom: none;
+}
+
+.activity-icon {
+    font-size: 1.2em;
+    margin-right: 10px;
+}
+
+.activity-text {
+    color: #555;
+}
+</style>

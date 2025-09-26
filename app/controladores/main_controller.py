@@ -15,8 +15,28 @@ generador_reportes = GeneradorReportes()
 @main_bp.route('/')
 #PAGINA PRINCIPAL DEL SISTEMA
 def pagina_inicio():
-    return render_template('index.html')
+    try:
+        invernaderos = parser.obtener_invernaderos()
 
+        #Calcular estadisticas
+        invernaderos_count = invernaderos.tamaño
+        drones_count = parser.obtener_drones().tamaño
+
+        planes_count = 0
+        for invernadero in invernaderos:
+            planes_count += invernadero.planes_riego.tamaño
+
+        return render_template('index.html',
+                               invernaderos_count=invernaderos_count,
+                               drones_count=drones_count,
+                               planes_count=planes_count)
+
+    except Exception as e:
+        #Fallback a version simple en caso de error
+        return render_template('index.html', 
+                               invernaderos_count=0,
+                               drones_count=0,
+                               planes_count=0)
 
 @main_bp.route('/cargar-xml', methods=['GET', 'POST'])
 #RUTA PARA CARGAR ARCHIVOS XML
