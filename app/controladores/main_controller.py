@@ -3,6 +3,7 @@ from ..utils.xml_parser import XMLParser
 from ..utils.procesador_planes import ProcesadorPlanes
 from ..modelos.lista_enlazada import ListaEnlazada
 from ..utils.generador_reportes import GeneradorReportes
+from ..utils.generador_xml_salida import GeneradorXMLSalida
 
 #Crear blueprint para las rutas principales
 main_bp = Blueprint('main', __name__)
@@ -11,6 +12,7 @@ main_bp = Blueprint('main', __name__)
 parser = XMLParser()
 procesador = ProcesadorPlanes()
 generador_reportes = GeneradorReportes()
+generador_xml = GeneradorXMLSalida()
 
 @main_bp.route('/')
 #PAGINA PRINCIPAL DEL SISTEMA
@@ -253,46 +255,35 @@ def generar_grafo(invernadero_id):
             
     except Exception as e:
         return render_template('error.html', mensaje=f"Error generando grafico: {str(e)}")
+        
 
-
-@main_bp.route('/generar-reporte-completo/<int:invernadero_id>')
-#GENERAR REPORTE COMPLETO (HTML + Graphviz)
-def generar_reporte_completo(invernadero_id):
+#EXPORTAR TODOS LOS DATOS A XML
+@main_bp.route('/exportar-xml')
+def exportar_xml():
     try:
         invernaderos = parser.obtener_invernaderos()
         
         if invernaderos.tamaño == 0:
-            return render_template('error.html', mensaje="No hay invernaderos cargados")
+            return render_template('error.html', mensaje="No hay datos para exportar")
         
-        if invernadero_id >= invernaderos.tamaño:
-            return render_template('error.html', mensaje="ID de invernadero invalido")
+        #Generar XML completo
+        ruta_xml = generador_xml.generar_xml_completo(parser, procesador)
         
-        invernadero = invernaderos.obtener(invernadero_id)
-        
-        if invernadero.planes_riego.tamaño == 0:
-            return render_template('error.html', mensaje="No hay planes de riego")
-        
-        #Procesar plan
-        plan = invernadero.planes_riego.obtener(0)
-        contenido_plan = plan.obtener(1)
-        instrucciones = procesador.procesar_plan(contenido_plan, invernadero)
-        
-        #Generar HTML
-        reporte_html = generador_reportes.generar_reporte_invernadero_html(
-            invernadero, plan, instrucciones
-        )
-        nombre_html = f"reporte_completo_{invernadero.nombre.replace(' ', '_')}.html"
-        ruta_html = generador_reportes.guardar_reporte_html(reporte_html, nombre_html)
-        
-        #Generar grafico
-        ruta_grafo = generador_reportes.generar_grafo_tdas(invernadero, instrucciones)
-        
-        if ruta_html and ruta_grafo:
+        if ruta_xml:
             return render_template('exito.html',
-                                mensaje="Reporte completo generado con exito",
-                                detalles=f"HTML: {ruta_html}<br>Grafico: {ruta_grafo}")
+                                mensaje="Archivo XML de salida generado con exito",
+                                detalles=f"Archivo guardado en: {ruta_xml}")
         else:
-            return render_template('error.html', mensaje="Error al generar reporte completo")
+            return render_template('error.html', mensaje="Error al generar XML de salida")
             
+    except Exception as e:
+        return render_template('error.html', mensaje=f"Error exportando XML: {str(e)}")
+
+#PAGINA DE EXPORTACION
+@main_bp.route('/exportar')
+def pagina_exportar():
+    try:
+        invernaderos = parser.obtener_invernaderos()
+        return render_template('exportar.html', invernaderos=invernaderos)
     except Exception as e:
         return render_template('error.html', mensaje=f"Error: {str(e)}")
