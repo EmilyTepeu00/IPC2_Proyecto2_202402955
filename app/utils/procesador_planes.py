@@ -6,138 +6,119 @@ class ProcesadorPlanes:
     def __init__(self):
         self.instrucciones_tiempo = ListaEnlazada()
         self.tiempo_actual = 0
+        self.plan_actual = ListaEnlazada()
 
     #PROCESAR PLAN DE RIEGO
-    def procesar_plan(self, plan_conetnido, invernadero):
-        #Limpiar instrucciones previas
+    def procesar_plan(self, plan_contenido, invernadero):
         self.instrucciones_tiempo = ListaEnlazada()
         self.tiempo_actual = 0
+        self.plan_actual = ListaEnlazada()
 
         #Parsear el plan
-        plantas_a_regar = plan_conetnido.split(',')
-        coordenadas = ListaEnlazada()
-
+        plantas_a_regar = plan_contenido.split(',')
         for planta in plantas_a_regar:
             planta = planta.strip()
             if '-' in planta:
                 partes = planta.split('-')
                 if len(partes) == 2:
                     try:
-                        hilera = int(partes[0][1:]) #Extraer numero de "H1"
+                        hilera = int(partes[0][1:])
                         posicion = int(partes[1][1:]) #Extraer numero de "P2"
                         
                         #Coordenadas
                         coord = ListaEnlazada()
                         coord.agregar_final(hilera)
                         coord.agregar_final(posicion)
-                        coordenadas.agregar_final(coord)
-
+                        self.plan_actual.agregar_final(coord)
                     except ValueError:
                         continue
 
-        #Generar instrucciones
-        self._generar_instrucciones(coordenadas, invernadero)
-        
-        return self.instrucciones_tiempo
-    
-    #GENERAR INSTRUCCIONES PARA CADA DRON
-    def _generar_instrucciones(self, coordenadas, invernadero):
-        #Reiniciar drones a posicion inicial
+        #Reiniciar drones
         for hilera in invernadero.hileras:
             if hilera.dron_asignado:
                 hilera.dron_asignado.reiniciar()
 
-        #Procesar cada coordenada del plan
-        for coord in coordenadas:
+        #Procesar cada planta en el orden del plan
+        for coord in self.plan_actual:
             hilera_num = coord.obtener(0)
             posicion = coord.obtener(1)
-            self._procesar_coordenada(hilera_num, posicion, invernadero)   
+            self._mover_y_regar(hilera_num, posicion, invernadero)
 
-        #Regresar todos los drones al inicio
+        #Regresar drones al inicio
         self._regresar_drones_al_inicio(invernadero)
-
-    #PROCESAR COORDENADA ESPECIFICA DEL PLAN
-    def _procesar_coordenada(self, hilera_num, posicion, invernadero):
-        #Buscar la hilera y dron correspondiente
-        hilera = None
-        for h in invernadero.hileras:
-            if h.numero == hilera_num:
-                hilera = h
+        
+        return self.instrucciones_tiempo
+    
+    def _mover_y_regar(self, hilera_num, posicion, invernadero):
+        #Encontrar dron de la hilera
+        dron_objetivo = None
+        hilera_objetivo = None
+        
+        for hilera in invernadero.hileras:
+            if hilera.numero == hilera_num and hilera.dron_asignado:
+                dron_objetivo = hilera.dron_asignado
+                hilera_objetivo = hilera
                 break
-
-        if not hilera or not hilera.dron_asignado:
-            return
         
-        dron = hilera.dron_asignado
-        planta = hilera.obtener_planta(posicion)
-
-        if not planta:
+        if not dron_objetivo:
             return
+
+        planta_objetivo = hilera_objetivo.obtener_planta(posicion)
+
+        if not planta_objetivo:
+            return
+
+        #Mover dron a la posicion
+        while dron_objetivo.posicion_actual < posicion:
+            self._agregar_instruccion_unica(dron_objetivo, dron_objetivo.mover_adelante(), invernadero)
         
-        #Mover dron a la posicion deseada
-        while dron.posicion_actual < posicion:
-            self._agregar_instruccion_tiempo(dron, dron.mover_adelante())
+        #Solo un dron puede regar a la vez
+        self._agregar_instruccion_unica(dron_objetivo, dron_objetivo.regar(planta_objetivo), invernadero)
+        
+        planta_objetivo.regada = True
 
-        #Regar la planta
-        self._agregar_instruccion_tiempo(dron, dron.regar(planta))
+    #SOLO UN DRON PUEDE REALIZAR ACCIONES A LA VEZ
+    def _agregar_instruccion_unica(self, dron, instruccion, invernadero):
+        #Crear nuevo tiempo
+        nuevo_tiempo = ListaEnlazada()
+        nuevo_tiempo.agregar_final(self.tiempo_actual)
+        
+        instrucciones_tiempo = ListaEnlazada()
+        
+        #instruccion del dron activo
+        instruccion_dron = ListaEnlazada()
+        instruccion_dron.agregar_final(dron.nombre)
+        instruccion_dron.agregar_final(instruccion)
+        instrucciones_tiempo.agregar_final(instruccion_dron)
+        
+        #Los otros drones esperan
+        for hilera in invernadero.hileras:
+            if hilera.dron_asignado and hilera.dron_asignado != dron:
+                instruccion_espera = ListaEnlazada()
+                instruccion_espera.agregar_final(hilera.dron_asignado.nombre)
+                instruccion_espera.agregar_final("Esperar")
+                instrucciones_tiempo.agregar_final(instruccion_espera)
+        
+        nuevo_tiempo.agregar_final(instrucciones_tiempo)
+        self.instrucciones_tiempo.agregar_final(nuevo_tiempo)
+        self.tiempo_actual += 1
 
-        #Marcar planta como regada
-        planta.regada = True
-
-    #REGRESAR TODOS LOS DRONES AL INICIO DE SU HILERA
     def _regresar_drones_al_inicio(self, invernadero):
         for hilera in invernadero.hileras:
             if hilera.dron_asignado:
                 dron = hilera.dron_asignado
-                while dron.posicion_actual > 1:
-                    self._agregar_instruccion_tiempo(dron, dron.mover_atras())
-                if dron.posicion_actual == 1:
-                    self._agregar_instruccion_tiempo(dron, "En posición inicial")
+                while dron.posicion_actual > 0:
+                    self._agregar_instruccion_unica(dron, dron.mover_atras(), invernadero)
 
-    #AGREGAR INSTRUCCION EN EL TIEMPO ACTUAL
-    def _agregar_instruccion_tiempo(self, dron, instruccion):
-        #Buscar si ya existe un registro para este tiempo
-        tiempo_existente = None
-        for tiempo_data in self.instrucciones_tiempo:
-            if tiempo_data.obtener(0) == self.tiempo_actual: #segundos en posicion0
-                tiempo_existente = tiempo_data
-                break
-
-        if tiempo_existente:
-            #tiempo_data: [segundos, instrucciones]
-            instrucciones = tiempo_existente.obtener(1)
-
-            #Instruccion: [nombre_dron, accion]
-            nueva_instruccion = ListaEnlazada()
-            nueva_instruccion.agregar_final(dron.nombre)
-            nueva_instruccion.agregar_final(instruccion)
-
-            instrucciones.agregar_final(nueva_instruccion)
-
-        else:
-            #Crear nuevo tiempo: [segundos, instrucciones]
-            nuevo_tiempo = ListaEnlazada()
-            nuevo_tiempo.agregar_final(self.tiempo_actual)
-
-            #Lista de instrucciones para este tiempo
-            instrucciones_tiempo = ListaEnlazada()
-
-            #Crear instruccion: [nombre_dron, accion]
-            nueva_instruccion = ListaEnlazada()
-            nueva_instruccion.agregar_final(dron.nombre)
-            nueva_instruccion.agregar_final(instruccion)
-            
-            instrucciones_tiempo.agregar_final(nueva_instruccion)
-            nuevo_tiempo.agregar_final(instrucciones_tiempo)
-            
-            self.instrucciones_tiempo.agregar_final(nuevo_tiempo)
-
-        self.tiempo_actual += 1
-
-    #OBTENER EL TIEMPO TOTAL DEL PLAN
     def obtener_tiempo_total(self):
         return self.tiempo_actual
-    
-    #OBTENER TODAS LAS INSTRUCCIONES POR TIEMPO
+
     def obtener_instrucciones(self):
         return self.instrucciones_tiempo
+    
+    #OBTENER ESTADO ESPECIFICO EN TIEMPO DADO
+    def obtener_estado_en_tiempo(self, tiempo):
+        if tiempo < 0 or tiempo >= self.instrucciones_tiempo.tamaño:
+            return None
+        
+        return self.instrucciones_tiempo.obtener(tiempo)

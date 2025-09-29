@@ -165,3 +165,59 @@ class GeneradorReportes:
         except Exception as e:
             print(f"Error guardando reporte HTML: {e}")
             return None
+    
+    #GRAFICO PARA TIEMPO DADO
+    def generar_grafo_tiempo_especifico(self, invernadero, instrucciones, tiempo_especifico):
+        try:
+            dot = graphviz.Digraph(comment=f'Estado TDAs en Tiempo {tiempo_especifico}')
+            dot.attr(rankdir='TB', size='8,5')
+        
+            #Obtener estado en tiempo especifico
+            estado_tiempo = instrucciones.obtener(tiempo_especifico)
+            segundos = estado_tiempo.obtener(0)
+            acciones = estado_tiempo.obtener(1)
+        
+            #Nodo principal
+            titulo = f'Sistema de Riego - {invernadero.nombre}\nTiempo: {tiempo_especifico}s'
+            dot.node('Sistema', titulo, shape='box', style='filled', color='lightblue')
+        
+            #Procesar acciones del tiempo específico
+            for accion in acciones:
+                dron_nombre = accion.obtener(0)
+                accion_texto = accion.obtener(1)
+            
+                #Encontrar dron
+                dron_obj = None
+                for hilera in invernadero.hileras:
+                    if hilera.dron_asignado and hilera.dron_asignado.nombre == dron_nombre:
+                        dron_obj = hilera.dron_asignado
+                        break
+            
+                if dron_obj:
+                    color = 'lightgreen' if 'Regar' in accion_texto else 'lightyellow'
+                    dot.node(f'Dron_{dron_nombre}', 
+                            f'{dron_nombre}\n{accion_texto}\Posicion: H{dron_obj.hilera_asignada}P{dron_obj.posicion_actual}',
+                            shape='ellipse', style='filled', color=color)
+                    dot.edge('Sistema', f'Dron_{dron_nombre}')
+        
+            #Estadisticas de plantas regadas
+            plantas_regadas = 0
+            for hilera in invernadero.hileras:
+                for planta in hilera.plantas:
+                    if planta.regada:
+                        plantas_regadas += 1
+        
+            dot.node('Plantas', f'Plantas Regadas\n{plantas_regadas}/{invernadero.numero_hileras * invernadero.plantas_x_hilera}', 
+                    shape='box', style='filled', color='lightcoral')
+            dot.edge('Sistema', 'Plantas')
+        
+            #Guardar grafico
+            nombre_archivo = f"grafo_tiempo_{tiempo_especifico}"
+            ruta_grafo = os.path.join(self.ruta_reportes, nombre_archivo)
+            dot.render(ruta_grafo, format='png', cleanup=True)
+        
+            return ruta_grafo + '.png'
+        
+        except Exception as e:
+            print(f"Error generando grafico de tiempo especifico: {e}")
+            return None

@@ -1,0 +1,312 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="card">
+    <h2>Resultado del Plan de Riego</h2>
+    
+    <div class="resultado-header">
+        <h3>{{ invernadero.nombre }}</h3>
+        <p><strong>Plan:</strong> {{ plan_nombre }}</p>
+    </div>
+
+    <!-- ESTADISTICAS -->
+    <div class="estadisticas-en-linea">
+        <div class="estadistica-item">
+            <span class="estadistica-label">⏱️ Tiempo Total:</span>
+            <span class="estadistica-valor">{{ tiempo_total }} segundos</span>
+        </div>
+        <div class="estadistica-item">
+            <span class="estadistica-label">💧 Agua Utilizada:</span>
+            <span class="estadistica-valor">{{ agua_total }} litros</span>
+        </div>
+        <div class="estadistica-item">
+            <span class="estadistica-label">🌱 Fertilizante Utilizado:</span>
+            <span class="estadistica-valor">{{ fertilizante_total }} gramos</span>
+        </div>
+    </div>
+
+    <!-- TABLA DE ESTADISTICAS DE DRONES -->
+    <div class="tabla-section">
+        <h3>Estadísticas por Dron</h3>
+        <div class="table-container">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Dron</th>
+                        <th>Hilera</th>
+                        <th>Agua (L)</th>
+                        <th>Fertilizante (g)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for stats in estadisticas_drones %}
+                    <tr>
+                        <td><strong>{{ stats.obtener(0) }}</strong></td>
+                        <td>{{ stats.obtener(3) }}</td>
+                        <td>{{ stats.obtener(1) }}</td>
+                        <td>{{ stats.obtener(2) }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- TABLA DE INSTRUCCIONES POR TIEMPO -->
+    <div class="tabla-section">
+        <h3>Instrucciones por Tiempo</h3>
+        <div class="table-container instrucciones-table">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Tiempo (s)</th>
+                        <th>Dron</th>
+                        <th>Acción</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for tiempo in instrucciones %}
+                        {% for accion in tiempo.obtener(1) %}
+                        <tr class="{% if 'Regar' in accion.obtener(1) %}fila-regar{% elif 'Esperar' in accion.obtener(1) %}fila-esperar{% else %}fila-mover{% endif %}">
+                            <td><strong>{{ tiempo.obtener(0) }}</strong></td>
+                            <td><strong>{{ accion.obtener(0) }}</strong></td>
+                            <td>{{ accion.obtener(1) }}</td>
+                            <td>
+                                {% if 'Regar' in accion.obtener(1) %}
+                                    <span class="estado-badge estado-regar">Regando</span>
+                                {% elif 'Esperar' in accion.obtener(1) %}
+                                    <span class="estado-badge estado-esperar">Esperando</span>
+                                {% else %}
+                                    <span class="estado-badge estado-mover">Moviendo</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="acciones-finales">
+        <a href="/seleccionar-plan" class="btn">🔄 Seleccionar Otro Plan</a>
+        <a href="/reportes" class="btn btn-secondary">Reportess</a>
+        <a href="/" class="btn btn-secondary">Inicio</a>
+    </div>
+</div>
+{% endblock %}
+
+<style>
+.resultado-header {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    border-left: 4px solid #3498db;
+}
+
+.resultado-header h3 {
+    margin: 0 0 10px 0;
+    color: #2c3e50;
+}
+
+.resultado-header p {
+    margin: 0;
+    font-size: 1.1em;
+}
+
+.estadisticas-en-linea {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: white;
+    border: 2px solid #e0e0e0;
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 30px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.estadistica-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    flex: 1;
+}
+
+.estadistica-label {
+    font-weight: bold;
+    color: #2c3e50;
+    margin-bottom: 8px;
+    font-size: 1em;
+}
+
+.estadistica-valor {
+    font-size: 1.4em;
+    font-weight: bold;
+    color: #3498db;
+}
+
+.estadistica-item:not(:last-child) {
+    border-right: 2px solid #f0f0f0;
+    padding-right: 20px;
+    margin-right: 20px;
+}
+
+.tabla-section {
+    margin-bottom: 30px;
+}
+
+.tabla-section h3 {
+    color: #2c3e50;
+    margin-bottom: 15px;
+    border-bottom: 2px solid #3498db;
+    padding-bottom: 10px;
+}
+
+.table-container {
+    background: white;
+    border: 2px solid #e0e0e0;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.instrucciones-table {
+    max-height: 500px;
+    overflow-y: auto;
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.95em;
+}
+
+.data-table th {
+    background: #3498db;
+    color: white;
+    padding: 15px 12px;
+    text-align: left;
+    font-weight: bold;
+    position: sticky;
+    top: 0;
+}
+
+.data-table td {
+    padding: 12px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.data-table tbody tr:hover {
+    background: #f8f9fa;
+}
+
+.fila-regar {
+    border-left: 4px solid #27ae60;
+    background: #f8fff8;
+}
+
+.fila-mover {
+    border-left: 4px solid #3498db;
+    background: #f8faff;
+}
+
+.fila-esperar {
+    border-left: 4px solid #f39c12;
+    background: #fffbf0;
+}
+
+.estado-badge {
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.8em;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.estado-regar {
+    background: #27ae60;
+    color: white;
+}
+
+.estado-mover {
+    background: #3498db;
+    color: white;
+}
+
+.estado-esperar {
+    background: #f39c12;
+    color: white;
+}
+
+.acciones-finales {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    flex-wrap: wrap;
+    padding-top: 20px;
+    border-top: 2px solid #e0e0e0;
+}
+
+.btn {
+    padding: 12px 24px;
+    font-size: 1em;
+}
+
+.btn-secondary {
+    background: #6c757d;
+}
+
+.btn-secondary:hover {
+    background: #5a6268;
+}
+
+@media (max-width: 768px) {
+    .estadisticas-en-linea {
+        flex-direction: column;
+        gap: 20px;
+    }
+    
+    .estadistica-item:not(:last-child) {
+        border-right: none;
+        border-bottom: 2px solid #f0f0f0;
+        padding-right: 0;
+        margin-right: 0;
+        padding-bottom: 20px;
+        margin-bottom: 0;
+    }
+    
+    .table-container {
+        overflow-x: auto;
+    }
+    
+    .data-table {
+        min-width: 600px;
+    }
+    
+    .acciones-finales {
+        flex-direction: column;
+    }
+    
+    .acciones-finales .btn {
+        width: 100%;
+        text-align: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .data-table th,
+    .data-table td {
+        padding: 8px 6px;
+        font-size: 0.9em;
+    }
+    
+    .estado-badge {
+        font-size: 0.7em;
+        padding: 3px 6px;
+    }
+}
+</style>

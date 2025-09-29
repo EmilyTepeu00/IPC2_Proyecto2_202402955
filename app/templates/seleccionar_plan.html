@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="card">
+    <h2>Seleccionar Plan de Riego</h2>
+    
+    {% if invernaderos.tamaño > 0 %}
+    <form action="/procesar-plan-seleccionado" method="POST">
+        <div class="seleccion-container">
+            <div class="seleccion-item">
+                <h3>Seleccionar Invernadero</h3>
+                <select name="invernadero_id" id="invernaderoSelect" required class="form-select">
+                    {% for invernadero in invernaderos %}
+                    <option value="{{ loop.index0 }}">{{ invernadero.obtener(0) }} ({{ invernadero.obtener(1) }} hileras)</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="seleccion-item">
+                <h3>Seleccionar Plan de Riego</h3>
+                <div id="planesContainer">
+                    {% for invernadero in invernaderos %}
+                    <div class="planes-invernadero" id="planes-{{ loop.index0 }}" {% if not loop.first %}style="display: none;"{% endif %}>
+                        {% set invernadero_index = loop.index0 %}
+                        {% if invernadero.obtener(3).tamaño > 0 %}
+                            {% for plan in invernadero.obtener(3) %}
+                            <div class="plan-option">
+                                <input type="radio" name="plan_id" value="{{ loop.index0 }}" id="plan-{{ invernadero_index }}-{{ loop.index0 }}" 
+                                       {% if loop.first and invernadero_index == 0 %}checked{% endif %} required>
+                                <label for="plan-{{ invernadero_index }}-{{ loop.index0 }}">
+                                    <strong>{{ plan.obtener(0) }}</strong><br>
+                                    <small>{{ plan.obtener(1) }}</small>
+                                </label>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <p>No hay planes disponibles</p>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-large">Procesar Plan Seleccionado</button>
+        </div>
+    </form>
+    {% else %}
+    <div class="empty-state">
+        <p>No hay invernaderos cargados</p>
+        <a href="/cargar-xml" class="btn">Cargar XML</a>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+document.getElementById('invernaderoSelect').addEventListener('change', function() {
+    const invernaderoId = this.value;
+    
+    //Ocultar todos los contenedores de planes
+    document.querySelectorAll('.planes-invernadero').forEach(container => {
+        container.style.display = 'none';
+    });
+    
+    //Mostrar el contenedor del invernadero seleccionado
+    const planesContainer = document.getElementById('planes-' + invernaderoId);
+    if (planesContainer) {
+        planesContainer.style.display = 'block';
+    }
+    
+    //Seleccionar el primer plan del invernadero seleccionado
+    const firstRadio = planesContainer.querySelector('input[type="radio"]');
+    if (firstRadio) {
+        firstRadio.checked = true;
+    }
+});
+</script>
+
+<style>
+.seleccion-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+    margin-bottom: 30px;
+}
+
+.seleccion-item h3 {
+    color: #2c3e50;
+    margin-bottom: 15px;
+}
+
+.form-select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 16px;
+}
+
+.plan-option {
+    margin: 10px 0;
+    padding: 15px;
+    border: 1px solid #e0e0e0;
+    border-radius: 5px;
+    transition: background-color 0.3s;
+}
+
+.plan-option:hover {
+    background: #f8f9fa;
+}
+
+.plan-option input[type="radio"] {
+    margin-right: 10px;
+}
+
+.plan-option label {
+    cursor: pointer;
+    display: block;
+}
+
+.plan-option small {
+    color: #666;
+    font-size: 0.9em;
+}
+
+.form-actions {
+    text-align: center;
+    margin-top: 30px;
+}
+
+.btn-large {
+    padding: 15px 30px;
+    font-size: 18px;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 40px;
+}
+
+@media (max-width: 768px) {
+    .seleccion-container {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+{% endblock %}

@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="card">
+    <h2>⏱️ Simulacion de Tiempo Especifico</h2>
+    
+    <div class="simulacion-info">
+        <h3>Invernadero: {{ invernadero.nombre }}</h3>
+        <p><strong>Tiempo simulado:</strong> {{ tiempo }} segundos</p>
+        <p><strong>Tiempo total del plan:</strong> {{ tiempo_total }} segundos</p>
+        
+        <div class="acciones-tiempo">
+            <h4>Acciones en este tiempo:</h4>
+            <ul>
+                {% for accion in acciones %}
+                <li><strong>{{ accion.obtener(0) }}:</strong> {{ accion.obtener(1) }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+    {% if imagen_grafico %}
+    <div class="grafico-container">
+        <h3>📊 Estado de los TDAs en Tiempo {{ tiempo }}s</h3>
+        <img src="{{ url_for('static', filename=imagen_grafico) }}" alt="Grafico TDAs" class="grafico-img">
+    </div>
+    {% endif %}
+
+    <div class="acciones-simulacion">
+        <h3>🔄 Cambiar Tiempo de Simulacion</h3>
+        <form action="/simular-tiempo/0" method="GET" class="time-form">
+            <input type="number" name="tiempo" min="0" max="{{ tiempo_total - 1 }}" 
+                   value="{{ tiempo }}" placeholder="Nuevo tiempo" required>
+            <button type="submit" class="btn">Simular Nuevo Tiempo</button>
+        </form>
+    </div>
+
+    <div class="navegacion">
+        <a href="/seleccionar-plan" class="btn">Seleccionar Otro Plan</a>
+        <a href="/reportes" class="btn btn-secondary">Volver a Reportes</a>
+    </div>
+</div>
+{% endblock %}
+
+<style>
+.simulacion-info {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.grafico-container {
+    text-align: center;
+    margin: 30px 0;
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+}
+
+.grafico-img {
+    max-width: 100%;
+    max-height: 600px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+.acciones-simulacion {
+    background: #e8f4f8;
+    padding: 20px;
+    border-radius: 8px;
+    margin: 20px 0;
+}
+
+.time-form {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    justify-content: center;
+}
+
+.time-form input {
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    width: 120px;
+    font-size: 16px;
+}
+
+.navegacion {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    margin-top: 20px;
+}
+</style>

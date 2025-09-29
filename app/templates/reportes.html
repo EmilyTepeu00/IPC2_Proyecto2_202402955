@@ -5,25 +5,34 @@
     <h2>📊 Generar Reportes</h2>
     
     {% if invernaderos.tamaño > 0 %}
+    <div class="seleccion-invernadero">
+        <h3>Seleccionar Invernadero</h3>
+        <select id="invernaderoSelect" class="form-select">
+            {% for invernadero in invernaderos %}
+            <option value="{{ loop.index0 }}">{{ invernadero.nombre }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    
     <div class="reportes-options">
         <div class="option-card">
             <h3>📄 Reporte HTML Completo</h3>
             <p>Genera un reporte detallado en formato HTML con todas las estadisticas e instrucciones</p>
-            <a href="/generar-reporte-html/0" class="btn">Generar Reporte HTML</a>
+            <button onclick="generarReporteHTML()" class="btn">Generar Reporte HTML</button>
         </div>
         
         <div class="option-card">
-            <h3>📈 Gráfico Graphviz</h3>
+            <h3>📈 Grafico Graphviz</h3>
             <p>Genera un diagrama visual del estado de los TDAs y drones</p>
-            <a href="/generar-grafo/0" class="btn">Generar Grafico</a>
+            <button onclick="generarGrafico()" class="btn">Generar Grafico</button>
         </div>
         
         <div class="option-card">
             <h3>⏱️ Simular Tiempo Especifico</h3>
             <p>Ver estado de los TDAs en un tiempo especifico del proceso</p>
-            <form action="/simular-tiempo/0" method="GET" class="time-form">
-                <input type="number" name="tiempo" min="0" max="100" placeholder="Tiempo en segundos" required>
-                <button type="submit" class="btn btn-small">Simular</button>
+            <form id="timeForm" class="time-form">
+                <input type="number" id="tiempoInput" min="0" max="100" placeholder="Tiempo en segundos" required>
+                <button type="button" onclick="simularTiempo()" class="btn btn-small">Simular</button>
             </form>
         </div>
     </div>
@@ -34,31 +43,99 @@
     </div>
     {% endif %}
 </div>
-{% endblock %}
+
+<script>
+function getSelectedInvernadero() {
+    const select = document.getElementById('invernaderoSelect');
+    return select.value;
+}
+
+function generarReporteHTML() {
+    const invernaderoId = getSelectedInvernadero();
+    window.location.href = `/generar-reporte-html/${invernaderoId}`;
+}
+
+function generarGrafico() {
+    const invernaderoId = getSelectedInvernadero();
+    window.location.href = `/generar-grafo/${invernaderoId}`;
+}
+
+function simularTiempo() {
+    const invernaderoId = getSelectedInvernadero();
+    const tiempo = document.getElementById('tiempoInput').value;
+    if (tiempo && tiempo >= 0) {
+        window.location.href = `/simular-tiempo/${invernaderoId}?tiempo=${tiempo}`;
+    } else {
+        alert('Por favor ingrese un tiempo valido');
+    }
+}
+
+//Cargar el primer invernadero por defecto
+document.addEventListener('DOMContentLoaded', function() {
+    const select = document.getElementById('invernaderoSelect');
+    if (select) {
+        select.selectedIndex = 0;
+    }
+});
+</script>
 
 <style>
+.seleccion-invernadero {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 25px;
+    border-left: 4px solid #3498db;
+}
+
+.seleccion-invernadero h3 {
+    margin: 0 0 15px 0;
+    color: #2c3e50;
+}
+
+.form-select {
+    width: 100%;
+    max-width: 400px;
+    padding: 12px;
+    border: 2px solid #ddd;
+    border-radius: 6px;
+    font-size: 16px;
+    background: white;
+}
+
 .reportes-options {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 20px;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 25px;
     margin-top: 20px;
 }
 
 .option-card {
-    border: 1px solid #ddd;
-    padding: 20px;
-    border-radius: 8px;
+    border: 2px solid #e0e0e0;
+    padding: 25px;
+    border-radius: 10px;
     text-align: center;
+    background: white;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    transition: transform 0.2s;
+}
+
+.option-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
 }
 
 .option-card h3 {
     margin-top: 0;
     color: #2c3e50;
+    border-bottom: 2px solid #3498db;
+    padding-bottom: 10px;
 }
 
 .option-card p {
     color: #666;
     margin-bottom: 20px;
+    line-height: 1.5;
 }
 
 .time-form {
@@ -66,12 +143,47 @@
     gap: 10px;
     justify-content: center;
     align-items: center;
+    margin-top: 15px;
 }
 
 .time-form input {
-    padding: 8px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
+    padding: 10px;
+    border: 2px solid #ddd;
+    border-radius: 6px;
     width: 150px;
+    font-size: 16px;
+}
+
+.btn-small {
+    padding: 10px 20px;
+    font-size: 14px;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 40px;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.empty-state p {
+    margin-bottom: 20px;
+    color: #666;
+    font-size: 1.1em;
+}
+
+@media (max-width: 768px) {
+    .reportes-options {
+        grid-template-columns: 1fr;
+    }
+    
+    .time-form {
+        flex-direction: column;
+    }
+    
+    .time-form input {
+        width: 100%;
+    }
 }
 </style>
+{% endblock %}
