@@ -9,6 +9,7 @@ class GeneradorReportes:
         self.ruta_reportes = "data/salida/reportes"
         self.crear_directorios()
     
+    #CREAR DIRECTORIOS SI NO HAY
     def crear_directorios(self):
         if not os.path.exists(self.ruta_reportes):
             os.makedirs(self.ruta_reportes)
@@ -70,7 +71,7 @@ class GeneradorReportes:
         
         #Instrucciones por tiempo
         html.agregar_final("<div class='section'>")
-        html.agregar_final("<h3>Linea de Tiempo de Instrucciones</h3>")
+        html.agregar_final("<h3>⏱️ Linea de Tiempo de Instrucciones</h3>")
         
         for tiempo_data in instrucciones:
             segundos = tiempo_data.obtener(0)
@@ -96,41 +97,62 @@ class GeneradorReportes:
         return html
     
     #GRAFICO GRAPHVIZ DEL ESTADO DE LOS TDAs
-    def generar_grafo_tdas(self, invernadero, instrucciones):
+    def generar_grafo_tdas(self, invernadero, instrucciones, tiempo_especifico=None):
         try:
             dot = graphviz.Digraph(comment='Estado TDAs Sistema Riego')
             
             #Configuracion del grafico
             dot.attr(rankdir='TB', size='8,5')
             
-            #Nodo principal
-            dot.node('Sistema', 'Sistema de Riego\n{}'.format(invernadero.nombre), 
+            #Nodo principal del sistema
+            titulo_sistema = f'Sistema de Riego\n{invernadero.nombre}'
+            if tiempo_especifico is not None:
+                titulo_sistema += f'\nTiempo: {tiempo_especifico}s'
+                
+            dot.node('Sistema', titulo_sistema, 
                     shape='box', style='filled', color='lightblue')
             
             #Nodos para cada dron
             for i, hilera in enumerate(invernadero.hileras):
                 if hilera.dron_asignado:
                     dron = hilera.dron_asignado
-                    dot.node(f'Dron{i}', f'{dron.nombre}\Posicion: H{dron.hilera_asignada}P{dron.posicion_actual}\nAgua: {dron.agua_utilizada}L', 
+                    dot.node(f'Dron{i}', f'{dron.nombre}\Posicion: H{dron.hilera_asignada}P{dron.posicion_actual}\nAgua: {dron.agua_utilizada}L\nFert: {dron.fertilizante_utilizado}g', 
                             shape='ellipse', style='filled', color='lightgreen')
                     dot.edge('Sistema', f'Dron{i}')
             
             #Nodo para instrucciones
-            dot.node('Instrucciones', 'Instrucciones Generadas\nTiempo total: {}s'.format(instrucciones.tamaño), 
+            total_instrucciones = instrucciones.tamaño
+            titulo_instrucciones = f'Instrucciones Generadas\nTotal: {total_instrucciones}s'
+            if tiempo_especifico is not None:
+                titulo_instrucciones += f'\nTiempo actual: {tiempo_especifico}s'
+                
+            dot.node('Instrucciones', titulo_instrucciones, 
                     shape='box', style='filled', color='lightyellow')
             dot.edge('Sistema', 'Instrucciones')
             
+            #Nodo para plantas regadas
+            plantas_regadas = 0
+            for hilera in invernadero.hileras:
+                for planta in hilera.plantas:
+                    if planta.regada:
+                        plantas_regadas += 1
+            
+            dot.node('Plantas', f'Plantas Regadas\n{plantas_regadas} de {invernadero.numero_hileras * invernadero.plantas_x_hilera}', 
+                    shape='box', style='filled', color='lightcoral')
+            dot.edge('Sistema', 'Plantas')
+            
             #Guardar grafico
-            ruta_grafo = os.path.join(self.ruta_reportes, 'grafo_tdas')
+            nombre_archivo = f"grafo_tdas_{tiempo_especifico}" if tiempo_especifico is not None else "grafo_tdas"
+            ruta_grafo = os.path.join(self.ruta_reportes, nombre_archivo)
             dot.render(ruta_grafo, format='png', cleanup=True)
             
             return ruta_grafo + '.png'
             
         except Exception as e:
-            print(f"Error generando grafico Graphviz: {e}")
+            print(f"Error generando gráfico Graphviz: {e}")
             return None
     
-    #GUARDAR EL REPORTE EN UN RCHIVO
+    #GUARDAR EL REPORTE EN UN ARCHIVO
     def guardar_reporte_html(self, contenido_html, nombre_archivo):
         try:
             ruta_archivo = os.path.join(self.ruta_reportes, nombre_archivo)

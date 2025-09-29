@@ -7,9 +7,32 @@
     {% if detalles %}
     <p><small>{{ detalles }}</small></p>
     {% endif %}
+    
+    {% if imagen_grafico %}
+    <div class="grafico-container">
+        <h4>📊 Grafico Generado:</h4>
+        <img src="{{ url_for('static', filename=imagen_grafico) }}" alt="Gráfico TDAs" class="grafico-img">
+    </div>
+    {% endif %}
+    
     <div class="acciones">
-        <a href="/invernaderos" class="btn">Ver Invernaderos</a>
-        <a href="/" class="btn btn-secondary">Volver al Inicio</a>
+        {% if 'cargado' in mensaje.lower() or 'xml' in mensaje.lower() and 'exportar' not in mensaje.lower() %}
+        <a href="/cargar-xml" class="btn">Regresar</a>
+
+        {% elif 'reporte' in mensaje.lower() or 'graphviz' in mensaje.lower() %}
+        <a href="/reportes" class="btn">Regresar</a>
+        
+        {% elif 'gráfico' in mensaje.lower() or 'graphviz' in mensaje.lower() %}
+        <a href="/reportes" class="btn">Regresar</a>
+        
+        {% elif 'exportar' in mensaje.lower() or 'salida' in mensaje.lower() %}
+        <a href="/exportar" class="btn">Regresar</a>
+        
+        {% else %}
+        <a href="/" class="btn">Volver al Inicio</a>
+        {% endif %}
+        
+        <a href="/invernaderos" class="btn btn-secondary">Ver Invernaderos</a>
     </div>
 </div>
 {% endblock %}
@@ -22,9 +45,23 @@
 
 .acciones {
     margin-top: 20px;
+    display: flex;
+    gap: 10px;
+    justify-content: center;
 }
 
 .btn-secondary {
     background: #6c757d;
+}
+
+.grafico-container {
+    margin: 20px 0;
+    text-align: center;
+}
+
+.grafico-img {
+    max-width: 100%;
+    border: 1px solid #ddd;
+    border-radius: 5px;
 }
 </style>

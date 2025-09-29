@@ -3,19 +3,28 @@
 {% block content %}
 <div class="card">
     <h2>📊 Generar Reportes</h2>
-
+    
     {% if invernaderos.tamaño > 0 %}
     <div class="reportes-options">
         <div class="option-card">
-            <h3>📄 Reporte HTML completo</h3>
-            <p>Genera un reporte detallado en un formato HTML con todas las estadisticas e instrucciones</p>
+            <h3>📄 Reporte HTML Completo</h3>
+            <p>Genera un reporte detallado en formato HTML con todas las estadisticas e instrucciones</p>
             <a href="/generar-reporte-html/0" class="btn">Generar Reporte HTML</a>
         </div>
-
+        
         <div class="option-card">
-            <h3>📈 Grafico Graphviz</h3>
+            <h3>📈 Gráfico Graphviz</h3>
             <p>Genera un diagrama visual del estado de los TDAs y drones</p>
             <a href="/generar-grafo/0" class="btn">Generar Grafico</a>
+        </div>
+        
+        <div class="option-card">
+            <h3>⏱️ Simular Tiempo Especifico</h3>
+            <p>Ver estado de los TDAs en un tiempo especifico del proceso</p>
+            <form action="/simular-tiempo/0" method="GET" class="time-form">
+                <input type="number" name="tiempo" min="0" max="100" placeholder="Tiempo en segundos" required>
+                <button type="submit" class="btn btn-small">Simular</button>
+            </form>
         </div>
     </div>
     {% else %}
@@ -50,5 +59,19 @@
 .option-card p {
     color: #666;
     margin-bottom: 20px;
+}
+
+.time-form {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    align-items: center;
+}
+
+.time-form input {
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    width: 150px;
 }
 </style>

@@ -285,5 +285,184 @@ def pagina_exportar():
     try:
         invernaderos = parser.obtener_invernaderos()
         return render_template('exportar.html', invernaderos=invernaderos)
+        
     except Exception as e:
         return render_template('error.html', mensaje=f"Error: {str(e)}")
+    
+
+#PAGINA DE AYUDA DEL SISTEMA
+@main_bp.route('/ayuda')
+def pagina_ayuda():
+    return render_template('ayuda.html')
+
+
+#PAGINA ACERCA DEL SISTEMA
+@main_bp.route('/acerca-de')
+def acerca_de():
+    return render_template('acerca_de.html')
+
+
+#SIMULAR ESTADO DE TDAs EN TIEMPO ESPECIFICO
+@main_bp.route('/simular-tiempo/<int:invernadero_id>')
+def simular_tiempo(invernadero_id):
+    try:
+        tiempo_str = request.args.get('tiempo', '0')
+        
+        if not tiempo_str.isdigit():
+            return render_template('error.html', mensaje="El tiempo debe ser un numero valido")
+        
+        tiempo = int(tiempo_str)
+        invernaderos = parser.obtener_invernaderos()
+        
+        if invernaderos.tamaño == 0:
+            return render_template('error.html', mensaje="No hay invernaderos cargados")
+        
+        if invernadero_id >= invernaderos.tamaño:
+            return render_template('error.html', mensaje="ID de invernadero invalido")
+        
+        invernadero = invernaderos.obtener(invernadero_id)
+        
+        if invernadero.planes_riego.tamaño == 0:
+            return render_template('error.html', mensaje="No hay planes de riego")
+        
+        #Procesar plan para obtener instrucciones
+        plan = invernadero.planes_riego.obtener(0)
+        contenido_plan = plan.obtener(1)
+        instrucciones = procesador.procesar_plan(contenido_plan, invernadero)
+        
+        #Verificar que el tiempo esté en rango
+        if tiempo < 0 or tiempo >= instrucciones.tamaño:
+            return render_template('error.html', 
+                                mensaje=f"Tiempo {tiempo}s fuera de rango. Rango valido: 0-{instrucciones.tamaño-1}s")
+        
+        #Generar grafico para tiempo especifico
+        ruta_grafo = generador_reportes.generar_grafo_tdas(invernadero, instrucciones, tiempo)
+        
+        if ruta_grafo:
+            #Obtener ruta para mostrar en HTML
+            from pathlib import Path
+            ruta_relativa = Path(ruta_grafo).relative_to('app/static')
+            
+            return render_template('simulacion_tiempo.html',
+                                invernadero=invernadero,
+                                tiempo=tiempo,
+                                tiempo_total=instrucciones.tamaño,
+                                imagen_grafico=str(ruta_relativa),
+                                instrucciones=instrucciones)
+        else:
+            return render_template('error.html', mensaje="Error al generar grafico")
+            
+    except Exception as e:
+        return render_template('error.html', mensaje=f"Error en la simulacion: {str(e)}")
+
+
+#PARA SELECCIONAR INVERNADERO Y PLAN 
+@main_bp.route('/seleccionar-plan')
+def seleccionar_plan():
+    try:
+        invernaderos = parser.obtener_invernaderos()
+        
+        #Preparar datos para template
+        datos_invernaderos = ListaEnlazada()
+        for invernadero in invernaderos:
+            invernadero_info = ListaEnlazada()
+            invernadero_info.agregar_final(invernadero.nombre)
+            invernadero_info.agregar_final(invernadero.numero_hileras)
+            invernadero_info.agregar_final(invernadero.plantas_x_hilera)
+            
+            #Agregar planes
+            planes_info = ListaEnlazada()
+            for plan_data in invernadero.planes_riego:
+                plan_info = ListaEnlazada()
+                plan_info.agregar_final(plan_data.obtener(0))  #nombre
+                plan_info.agregar_final(plan_data.obtener(1))  #contenido
+                planes_info.agregar_final(plan_info)
+            
+            invernadero_info.agregar_final(planes_info)
+            datos_invernaderos.agregar_final(invernadero_info)
+        
+        return render_template('seleccionar_plan.html', 
+                             invernaderos=datos_invernaderos)
+        
+    except Exception as e:
+        return render_template('error.html', mensaje=f"Error: {str(e)}")
+
+
+#PROCESAR PLAN SELECCIONADO
+@main_bp.route('/procesar-plan-seleccionado', methods=['POST'])
+def procesar_plan_seleccionado():
+    try:
+        invernadero_id = int(request.form.get('invernadero_id', 0))
+        plan_id = int(request.form.get('plan_id', 0))
+        
+        invernaderos = parser.obtener_invernaderos()
+        
+        if invernaderos.tamaño == 0:
+            return render_template('error.html', mensaje="No hay invernaderos cargados")
+        
+        if invernadero_id >= invernaderos.tamaño:
+            return render_template('error.html', mensaje="ID de invernadero invalido")
+        
+        invernadero = invernaderos.obtener(invernadero_id)
+        
+        if invernadero.planes_riego.tamaño == 0:
+            return render_template('error.html', mensaje="No hay planes de riego")
+        
+        if plan_id >= invernadero.planes_riego.tamaño:
+            return render_template('error.html', mensaje="ID de plan invalido")
+        
+        #Procesar plan especifico
+        plan = invernadero.planes_riego.obtener(plan_id)
+        nombre_plan = plan.obtener(0)
+        contenido_plan = plan.obtener(1)
+        
+        instrucciones = procesador.procesar_plan(contenido_plan, invernadero)
+        tiempo_total = procesador.obtener_tiempo_total()
+        
+        #Calcular estadisticas
+        agua_total = 0
+        fertilizante_total = 0
+        estadisticas_drones = ListaEnlazada()
+        
+        for hilera in invernadero.hileras:
+            if hilera.dron_asignado:
+                dron = hilera.dron_asignado
+                agua_total += dron.agua_utilizada
+                fertilizante_total += dron.fertilizante_utilizado
+                
+                #Crear estadíestadisticas por dron
+                stats_dron = ListaEnlazada()
+                stats_dron.agregar_final(dron.nombre)
+                stats_dron.agregar_final(dron.agua_utilizada)
+                stats_dron.agregar_final(dron.fertilizante_utilizado)
+                stats_dron.agregar_final(hilera.numero)
+                estadisticas_drones.agregar_final(stats_dron)
+        
+        #Preparar instrucciones para template
+        instrucciones_template = ListaEnlazada()
+        for tiempo_data in instrucciones:
+            tiempo_info = ListaEnlazada()
+            tiempo_info.agregar_final(tiempo_data.obtener(0))  #segundos
+            
+            acciones_tiempo = ListaEnlazada()
+            instrucciones_tiempo = tiempo_data.obtener(1)
+            for instruccion in instrucciones_tiempo:
+                accion_info = ListaEnlazada()
+                accion_info.agregar_final(instruccion.obtener(0))  #dron
+                accion_info.agregar_final(instruccion.obtener(1))  #accion
+                acciones_tiempo.agregar_final(accion_info)
+            
+            tiempo_info.agregar_final(acciones_tiempo)
+            instrucciones_template.agregar_final(tiempo_info)
+        
+        return render_template('resultado_plan.html',
+                            invernadero=invernadero,
+                            plan_nombre=nombre_plan,
+                            tiempo_total=tiempo_total,
+                            agua_total=agua_total,
+                            fertilizante_total=fertilizante_total,
+                            estadisticas_drones=estadisticas_drones,
+                            instrucciones=instrucciones_template)
+        
+    except Exception as e:
+        return render_template('error.html', mensaje=f"Error al procesar plan: {str(e)}")

@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="card">
+    <h2>❓ Ayuda del Sistema</h2>
+    
+    <div class="help-sections">
+        <div class="help-section">
+            <h3>📖 Como Usar el Sistema</h3>
+            <div class="help-steps">
+                <div class="step">
+                    <span class="step-number">1</span>
+                    <div class="step-content">
+                        <h4>Cargar Archivo XML</h4>
+                        <p>Ve a la seccion <strong>"Cargar XML"</strong> y selecciona un archivo de configuracion valido</p>
+                    </div>
+                </div>
+                
+                <div class="step">
+                    <span class="step-number">2</span>
+                    <div class="step-content">
+                        <h4>Verificar Invernaderos</h4>
+                        <p>Revisa los invernaderos cargados en la seccion <strong>"Ver Invernaderos"</strong>.</p>
+                    </div>
+                </div>
+                
+                <div class="step">
+                    <span class="step-number">3</span>
+                    <div class="step-content">
+                        <h4>Probar Plan de Riego</h4>
+                        <p>Prueba el funcionamiento del sistema en <strong>"Probar Plan"</strong>.</p>
+                    </div>
+                </div>
+                
+                <div class="step">
+                    <span class="step-number">4</span>
+                    <div class="step-content">
+                        <h4>Generar Reportes</h4>
+                        <p>Crea reportes detallados en la sección <strong>"Reportes"</strong>.</p>
+                    </div>
+                </div>
+                
+                <div class="step">
+                    <span class="step-number">5</span>
+                    <div class="step-content">
+                        <h4>Exportar Resultados</h4>
+                        <p>Genera el archivo XML de salida en <strong>"Exportar XML"</strong>.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="help-section">
+            <h3>📋 Formato del Archivo XML</h3>
+            <p>El archivo XML de entrada debe seguir este formato basico:</p>
+            <div class="code-example">
+                &lt;configuracion&gt;<br>
+                &nbsp;&nbsp;&lt;listaDrones&gt;<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&lt;dron id="1" nombre="DR01"/&gt;<br>
+                &nbsp;&nbsp;&lt;/listaDrones&gt;<br>
+                &nbsp;&nbsp;&lt;listaInvernaderos&gt;<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&lt;invernadero nombre="Ejemplo"&gt;<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;numeroHileras&gt;3&lt;/numeroHileras&gt;<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;plantasXhilera&gt;4&lt;/plantasXhilera&gt;<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&lt;/invernadero&gt;<br>
+                &nbsp;&nbsp;&lt;/listaInvernaderos&gt;<br>
+                &lt;/configuracion&gt;
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+<style>
+.help-sections {
+    display: grid;
+    gap: 30px;
+}
+
+.help-section h3 {
+    color: #2c3e50;
+    border-bottom: 2px solid #3498db;
+    padding-bottom: 10px;
+}
+
+.help-steps {
+    display: grid;
+    gap: 20px;
+}
+
+.step {
+    display: flex;
+    align-items: flex-start;
+    gap: 15px;
+}
+
+.step-number {
+    background: #3498db;
+    color: white;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    flex-shrink: 0;
+}
+
+.step-content h4 {
+    margin: 0 0 5px 0;
+    color: #2c3e50;
+}
+
+.step-content p {
+    margin: 0;
+    color: #666;
+}
+
+.code-example {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    padding: 15px;
+    border-radius: 5px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.9em;
+    line-height: 1.4;
+}
+</style>

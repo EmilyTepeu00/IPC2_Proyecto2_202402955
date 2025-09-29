@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="card">
+    <h2>ℹ️ Acerca del Sistema</h2>
+    
+    <div class="about-content">
+        <div class="about-section">
+            <h3>Sistema de Riego Automatizado</h3>
+            <p>Sistema desarrollado para optimizar el riego y aplicacion de fertilizante en invernaderos usando drones roboticos</p>
+        </div>
+        
+        <div class="about-section">
+            <h3>Objetivos del Proyecto</h3>
+            <ul>
+                <li>Optimizar el uso de agua y fertilizante</li>
+                <li>Automatizar el proceso de riego</li>
+                <li>Generar reportes detallados del proceso</li>
+                <li>Reducir tiempos de ejecucion</li>
+            </ul>
+        </div>
+        
+        <div class="about-section">
+            <h3>🛠️ Tecnologias Utilizadas</h3>
+            <div class="tech-grid">
+                <div class="tech-item">
+                    <strong>Backend:</strong> Python, Flask
+                </div>
+                <div class="tech-item">
+                    <strong>Frontend:</strong> HTML5, CSS3, Jinja2
+                </div>
+                <div class="tech-item">
+                    <strong>TDAs:</strong> Listas Enlazadas, Pilas, Colas
+                </div>
+                <div class="tech-item">
+                    <strong>Reportes:</strong> Graphviz
+                </div>
+            </div>
+        </div>
+        
+        <div class="about-section">
+            <h3>📊 Caracteristicas Principales</h3>
+            <div class="features-grid">
+                <div class="feature-item">✅ Carga de archivos XML</div>
+                <div class="feature-item">✅ Procesamiento de planes de riego</div>
+                <div class="feature-item">✅ Generación de instrucciones</div>
+                <div class="feature-item">✅ Reportes HTML y graficos</div>
+                <div class="feature-item">✅ Exportacion de resultados</div>
+                <div class="feature-item">✅ Interfaz web responsive</div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+<style>
+.about-content {
+    display: grid;
+    gap: 25px;
+}
+
+.about-section h3 {
+    color: #2c3e50;
+    margin-bottom: 10px;
+}
+
+.tech-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 10px;
+}
+
+.tech-item {
+    background: #f8f9fa;
+    padding: 10px;
+    border-radius: 5px;
+}
+
+.features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 10px;
+}
+
+.feature-item {
+    background: #e8f5e8;
+    padding: 8px 12px;
+    border-radius: 5px;
+    color: #2d5016;
+}
+</style>
