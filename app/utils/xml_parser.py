@@ -11,6 +11,14 @@ class XMLParser:
         self.drones = ListaEnlazada()
         self.invernaderos = ListaEnlazada()
 
+    #Wrapper para findall que devuelve ListaEnlazada
+    def _findall_propio(self, elemento, tag_name):
+        elementos_nativos = elemento.findall(tag_name)
+        resultado = ListaEnlazada()
+        for elem in elementos_nativos:
+            resultado.agregar_final(elem)
+        return resultado
+
     #CARGAR Y PARSEAR ARCHIVO XML SEGUN LA RUTA
     def cargar_archivo(self, ruta_archivo):
         try:
@@ -28,13 +36,15 @@ class XMLParser:
             return True
         
         except Exception as e:
+            print(f"Error al cargar el archivo: {e}")
             return False
         
     #PARSEAR LISTA DE DRONES DEL XML
     def _parsear_drones(self, raiz):
         lista_drones = raiz.find('listaDrones')
         if lista_drones is not None:
-            for dron_xml in lista_drones.findall('dron'):
+            drones_xml = self._findall_propio(lista_drones, 'dron')
+            for dron_xml in drones_xml:
                 id_dron = int(dron_xml.get('id'))
                 nombre_dron = dron_xml.get('nombre')
                 nuevo_dron = Dron(id_dron, nombre_dron)
@@ -44,7 +54,8 @@ class XMLParser:
     def _parsear_invernaderos(self, raiz):
         lista_invernaderos = raiz.find('listaInvernaderos')
         if lista_invernaderos is not None:
-            for invernadero_xml in lista_invernaderos.findall('invernadero'):
+            invernaderos_xml = self._findall_propio(lista_invernaderos, 'invernadero')
+            for invernadero_xml in invernaderos_xml:
                 self._crear_invernadero(invernadero_xml)
 
     #CREAR INVERNADERO DESDE EL XML
@@ -70,8 +81,9 @@ class XMLParser:
     def _agregar_plantas(self, invernadero, invernadero_xml):
         lista_plantas = invernadero_xml.find('listaPlantas')
         if lista_plantas is not None:
+            plantas_xml = self._findall_propio(lista_plantas, 'planta')
             plantas_count = 0
-            for planta_xml in lista_plantas.findall('planta'):
+            for planta_xml in plantas_xml:
                 try:
                     hilera_num = int(planta_xml.get('hilera'))
                     posicion = int(planta_xml.get('posicion'))
@@ -93,13 +105,15 @@ class XMLParser:
                         plantas_count += 1
                         
                 except Exception as e:
+                    print(f"Error al procesar la planta: {e}")
                     continue
             
     #ASIGNAR DRONES A HILERAS
     def _asignar_drones(self, invernadero, invernadero_xml):
         asignaciones = invernadero_xml.find('asignacionDrones')
         if asignaciones is not None:
-            for asignacion in asignaciones.findall('dron'):
+            asignaciones_xml = self._findall_propio(asignaciones, 'dron')
+            for asignacion in asignaciones_xml:
                 id_dron = int(asignacion.get('id'))
                 num_hilera = int(asignacion.get('hilera'))
 
@@ -124,7 +138,8 @@ class XMLParser:
     def _agregar_planes_riego(self, invernadero, invernadero_xml):
         planes = invernadero_xml.find('planesRiego')
         if planes is not None:
-            for plan_xml in planes.findall('plan'):
+            planes_xml = self._findall_propio(planes, 'plan')
+            for plan_xml in planes_xml:
                 nombre_plan = plan_xml.get('nombre')
                 contenido_plan = plan_xml.text.strip() if plan_xml.text else ""
 
@@ -141,3 +156,8 @@ class XMLParser:
     #OBTENER LISTA DE INVERNADEROS
     def obtener_invernaderos(self):
         return self.invernaderos
+    
+    #LIMPIAR TODOS LOS DATOS
+    def limpiar_datos(self):
+        self.drones = ListaEnlazada()
+        self.invernaderos = ListaEnlazada()

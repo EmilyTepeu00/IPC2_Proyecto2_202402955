@@ -8,6 +8,25 @@ class ProcesadorPlanes:
         self.tiempo_actual = 0
         self.plan_actual = ListaEnlazada()
 
+    #PARA REMPLAZAR split()
+    def _split_string(self, texto, separador):
+        resultado = ListaEnlazada()
+        elemento_actual = ""
+        
+        for char in texto:
+            if char == separador:
+                if elemento_actual.strip():
+                    resultado.agregar_final(elemento_actual.strip())
+                elemento_actual = ""
+            else:
+                elemento_actual += char
+        
+        #Agregar el ultimo elemento
+        if elemento_actual.strip():
+            resultado.agregar_final(elemento_actual.strip())
+        
+        return resultado
+
     #PROCESAR PLAN DE RIEGO
     def procesar_plan(self, plan_contenido, invernadero):
         self.instrucciones_tiempo = ListaEnlazada()
@@ -15,21 +34,23 @@ class ProcesadorPlanes:
         self.plan_actual = ListaEnlazada()
 
         #Parsear el plan
-        plantas_a_regar = plan_contenido.split(',')
+        plantas_a_regar = self._split_string(plan_contenido, ',')
+
         for planta in plantas_a_regar:
             planta = planta.strip()
             if '-' in planta:
-                partes = planta.split('-')
-                if len(partes) == 2:
+                partes = self._split_string(planta, '-')
+                if partes.tamaño == 2:
                     try:
-                        hilera = int(partes[0][1:])
-                        posicion = int(partes[1][1:]) #Extraer numero de "P2"
+                        hilera = int(partes.obtener(0)[1:])  # Extraer numero de "H1"
+                        posicion = int(partes.obtener(1)[1:])  # Extraer numero de "P2"
                         
                         #Coordenadas
                         coord = ListaEnlazada()
                         coord.agregar_final(hilera)
                         coord.agregar_final(posicion)
                         self.plan_actual.agregar_final(coord)
+
                     except ValueError:
                         continue
 
@@ -68,7 +89,7 @@ class ProcesadorPlanes:
         if not planta_objetivo:
             return
 
-        #Mover dron a la posicion
+        #Mover dron a la posicion si no esta ahi
         while dron_objetivo.posicion_actual < posicion:
             self._agregar_instruccion_unica(dron_objetivo, dron_objetivo.mover_adelante(), invernadero)
         
@@ -79,13 +100,13 @@ class ProcesadorPlanes:
 
     #SOLO UN DRON PUEDE REALIZAR ACCIONES A LA VEZ
     def _agregar_instruccion_unica(self, dron, instruccion, invernadero):
-        #Crear nuevo tiempo
+        # Crear nuevo tiempo
         nuevo_tiempo = ListaEnlazada()
         nuevo_tiempo.agregar_final(self.tiempo_actual)
         
         instrucciones_tiempo = ListaEnlazada()
         
-        #instruccion del dron activo
+        #Instruccion del dron activo
         instruccion_dron = ListaEnlazada()
         instruccion_dron.agregar_final(dron.nombre)
         instruccion_dron.agregar_final(instruccion)

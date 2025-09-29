@@ -5,6 +5,15 @@
     <h2>Invernaderos Cargados</h2>
     
     {% if invernaderos.tamaño > 0 %}
+        <div class="invernaderos-header">
+            <p>Se encontraron {{ invernaderos.tamaño }} invernadero(s) cargado(s)</p>
+            <form action="/limpiar-datos" method="POST" class="borrar-form">
+                <button type="submit" class="btn btn-danger" onclick="return confirm('¿Esta seguro de que desea borrar todos los datos?')">
+                    🗑️ Borrar Todos los Invernaderos
+                </button>
+            </form>
+        </div>
+        
         <div class="invernaderos-grid">
             {% for invernadero in invernaderos %}
             <div class="invernadero-card">
@@ -29,6 +38,30 @@
 {% endblock %}
 
 <style>
+.invernaderos-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.borrar-form {
+    margin: 0;
+}
+
+.btn-danger {
+    background: #dc3545;
+    border-color: #dc3545;
+}
+
+.btn-danger:hover {
+    background: #c82333;
+    border-color: #bd2130;
+}
+
 .invernaderos-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
@@ -40,11 +73,14 @@
     padding: 20px;
     border-radius: 8px;
     background: white;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .invernadero-card h3 {
     margin-top: 0;
     color: #2c3e50;
+    border-bottom: 2px solid #3498db;
+    padding-bottom: 10px;
 }
 
 .acciones {
@@ -59,5 +95,13 @@
 .empty-state {
     text-align: center;
     padding: 40px;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.empty-state p {
+    margin-bottom: 20px;
+    color: #666;
+    font-size: 1.1em;
 }
 </style>

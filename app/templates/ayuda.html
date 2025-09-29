@@ -4,64 +4,93 @@
 <div class="card">
     <h2>❓ Ayuda del Sistema</h2>
     
+    <!-- DATOS DE ESTUDIANTE -->
+    <div class="datos-estudiante">
+        <h3>👨‍🎓 Datos del Estudiante</h3>
+        <div class="info-estudiante">
+            <div class="dato-item">
+                <strong>Nombre:</strong> Emily Maritza Tepeu Guacamaya
+            </div>
+            <div class="dato-item">
+                <strong>Carnet:</strong> 202402955
+            </div>
+            <div class="dato-item">
+                <strong>Documentación:</strong> https://github.com/EmilyTepeu00/IPC2_Proyecto2_202402955
+            </div>
+            <div class="dato-item">
+                <strong>Curso:</strong> Introducción a la Programación y Computación 2
+            </div>
+        </div>
+    </div>
+    
     <div class="help-sections">
         <div class="help-section">
-            <h3>📖 Como Usar el Sistema</h3>
+            <h3>Guia de Uso</h3>
             <div class="help-steps">
                 <div class="step">
-                    <span class="step-number">1</span>
+                    <span class="step-number"></span>
                     <div class="step-content">
-                        <h4>Cargar Archivo XML</h4>
-                        <p>Ve a la seccion <strong>"Cargar XML"</strong> y selecciona un archivo de configuracion valido</p>
+                        <h4>1. Cargar Archivo XML</h4>
+                        <p>Ve a la sección <strong>"Cargar XML"</strong> y selecciona un archivo de configuracion valido con la estructura requerida</p>
                     </div>
                 </div>
                 
                 <div class="step">
-                    <span class="step-number">2</span>
+                    <span class="step-number"></span>
                     <div class="step-content">
-                        <h4>Verificar Invernaderos</h4>
-                        <p>Revisa los invernaderos cargados en la seccion <strong>"Ver Invernaderos"</strong>.</p>
+                        <h4>2. Verificar Invernaderos</h4>
+                        <p>Revisa los invernaderos cargados en la seccion <strong>"Ver Invernaderos"</strong>. Aquí puedes ver la configuracion y borrar datos si es necesario</p>
                     </div>
                 </div>
                 
                 <div class="step">
-                    <span class="step-number">3</span>
+                    <span class="step-number"></span>
                     <div class="step-content">
-                        <h4>Probar Plan de Riego</h4>
-                        <p>Prueba el funcionamiento del sistema en <strong>"Probar Plan"</strong>.</p>
+                        <h4>3. Seleccionar y Probar Planes</h4>
+                        <p>Usa <strong>"Seleccionar Plan"</strong> para elegir un plan especifico o <strong>"Probar Plan"</strong> para probar el primer plan disponible</p>
                     </div>
                 </div>
                 
                 <div class="step">
-                    <span class="step-number">4</span>
+                    <span class="step-number"></span>
                     <div class="step-content">
-                        <h4>Generar Reportes</h4>
-                        <p>Crea reportes detallados en la sección <strong>"Reportes"</strong>.</p>
+                        <h4>4. Generar Reportes</h4>
+                        <p>Crea reportes detallados en la seccion <strong>"Reportes"</strong>. Puedes generar HTML, graficos y simulaciones por tiempo</p>
                     </div>
                 </div>
                 
                 <div class="step">
-                    <span class="step-number">5</span>
+                    <span class="step-number"></span>
                     <div class="step-content">
-                        <h4>Exportar Resultados</h4>
-                        <p>Genera el archivo XML de salida en <strong>"Exportar XML"</strong>.</p>
+                        <h4>5. Exportar Resultados</h4>
+                        <p>Genera el archivo XML de salida completo en <strong>"Exportar XML"</strong> con todos los invernaderos y planes procesados.</p>
                     </div>
                 </div>
             </div>
         </div>
         
         <div class="help-section">
-            <h3>📋 Formato del Archivo XML</h3>
-            <p>El archivo XML de entrada debe seguir este formato basico:</p>
+            <h3>📋 Estructura del Archivo XML</h3>
+            <p>El archivo XML de entrada debe seguir esta estructura basica:</p>
             <div class="code-example">
                 &lt;configuracion&gt;<br>
                 &nbsp;&nbsp;&lt;listaDrones&gt;<br>
                 &nbsp;&nbsp;&nbsp;&nbsp;&lt;dron id="1" nombre="DR01"/&gt;<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&lt;dron id="2" nombre="DR02"/&gt;<br>
                 &nbsp;&nbsp;&lt;/listaDrones&gt;<br>
                 &nbsp;&nbsp;&lt;listaInvernaderos&gt;<br>
                 &nbsp;&nbsp;&nbsp;&nbsp;&lt;invernadero nombre="Ejemplo"&gt;<br>
                 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;numeroHileras&gt;3&lt;/numeroHileras&gt;<br>
                 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;plantasXhilera&gt;4&lt;/plantasXhilera&gt;<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;listaPlantas&gt;<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;planta hilera="1" posicion="1" litrosAgua="1" gramosFertilizante="100"&gt;ciprés&lt;/planta&gt;<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;/listaPlantas&gt;<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;asignacionDrones&gt;<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;dron id="1" hilera="1"/&gt;<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;/asignacionDrones&gt;<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;planesRiego&gt;<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;plan nombre="Semana 1"&gt;H1-P2, H2-P1&lt;/plan&gt;<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;/planesRiego&gt;<br>
                 &nbsp;&nbsp;&nbsp;&nbsp;&lt;/invernadero&gt;<br>
                 &nbsp;&nbsp;&lt;/listaInvernaderos&gt;<br>
                 &lt;/configuracion&gt;
@@ -72,6 +101,34 @@
 {% endblock %}
 
 <style>
+.datos-estudiante {
+    background: #e8f4f8;
+    border: 2px solid #3498db;
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 25px;
+}
+
+.datos-estudiante h3 {
+    margin-top: 0;
+    color: #2c3e50;
+    border-bottom: 2px solid #3498db;
+    padding-bottom: 10px;
+}
+
+.info-estudiante {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 15px;
+}
+
+.dato-item {
+    background: white;
+    padding: 12px 15px;
+    border-radius: 6px;
+    border-left: 4px solid #3498db;
+}
+
 .help-sections {
     display: grid;
     gap: 30px;
@@ -115,15 +172,50 @@
 .step-content p {
     margin: 0;
     color: #666;
+    line-height: 1.5;
 }
 
 .code-example {
     background: #f8f9fa;
     border: 1px solid #e9ecef;
-    padding: 15px;
-    border-radius: 5px;
+    padding: 20px;
+    border-radius: 8px;
     font-family: 'Courier New', monospace;
     font-size: 0.9em;
-    line-height: 1.4;
+    line-height: 1.6;
+    overflow-x: auto;
+}
+
+.features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 12px;
+}
+
+.feature-item {
+    background: #e8f5e8;
+    padding: 12px 15px;
+    border-radius: 6px;
+    color: #2d5016;
+    border-left: 4px solid #27ae60;
+}
+
+@media (max-width: 768px) {
+    .info-estudiante {
+        grid-template-columns: 1fr;
+    }
+    
+    .features-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .step {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .step-number {
+        align-self: center;
+    }
 }
 </style>

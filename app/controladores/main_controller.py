@@ -487,3 +487,23 @@ def procesar_plan_seleccionado():
         
     except Exception as e:
         return render_template('error.html', mensaje=f"Error al procesar plan: {str(e)}")
+    
+
+#PARA LIMPIAR TODOS LOS DATOS
+@main_bp.route('/limpiar-datos', methods=['POST'])
+def limpiar_datos():
+    try:
+        #Limpiar todos los datos
+        parser.limpiar_datos()
+        
+        #Limpiar el procesador
+        procesador.instrucciones_tiempo = ListaEnlazada()
+        procesador.tiempo_actual = 0
+        procesador.plan_actual = ListaEnlazada()
+        
+        return render_template('exito.html', 
+                            mensaje="Todos los datos han sido borrados",
+                            detalles="Se eliminaron invernaderos, drones y planes de riego")
+        
+    except Exception as e:
+        return render_template('error.html', mensaje=f"Error al borrar datos: {str(e)}")
